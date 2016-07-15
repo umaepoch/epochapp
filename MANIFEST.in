@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include epochapp *.css
+recursive-include epochapp *.csv
+recursive-include epochapp *.html
+recursive-include epochapp *.ico
+recursive-include epochapp *.js
+recursive-include epochapp *.json
+recursive-include epochapp *.md
+recursive-include epochapp *.png
+recursive-include epochapp *.py
+recursive-include epochapp *.svg
+recursive-include epochapp *.txt
+recursive-exclude epochapp *.pyc
