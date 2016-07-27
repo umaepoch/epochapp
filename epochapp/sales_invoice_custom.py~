@@ -11,7 +11,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 		target.qty = flt(obj.qty) 
 		target.stock_qty = flt(obj.qty)
 		target.amount = flt(obj.qty) * flt(obj.rate)
-		target.base_amount = target.amount 
+		target.base_amount = flt(obj.qty) * flt(obj.rate) 
 
 	doc = get_mapped_doc("Sales Invoice", source_name,	{
 		"Sales Invoice": {
