@@ -1,0 +1,18 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2016-08-07 10:55:22.620171", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2016-08-07 10:57:10.626969", 
+ "modified_by": "Administrator", 
+ "module": "Pppl", 
+ "name": "Stock Balance Modified", 
+ "owner": "Administrator", 
+ "ref_doctype": "Stock Ledger Entry", 
+ "report_name": "Stock Balance Modified", 
+ "report_type": "Script Report"
+}
