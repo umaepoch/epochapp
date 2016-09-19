@@ -60,7 +60,7 @@ def execute(filters=None):
  				])
 			else:
 				summ_data.append([parent_prev, " ", " ", 
-			 	" ", " ", " ",
+			 	" ", " ", " ", " ",
 				tot_bal_qty, tot_bal_val, " "
  				])				
 
@@ -98,6 +98,7 @@ def get_columns():
                 _("Item Group")+"::100",
                 _("Item Name")+"::150",
                 _("Warehouse")+":Link/Warehouse:100",
+                _("UOM")+"::100",
                 _("Balance Qty")+":Float:100",
                 _("Balance Value")+":Float:100",
 
