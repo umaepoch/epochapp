@@ -31,8 +31,7 @@ def execute(filters=None):
                         item, item_map[item]["description"],
                         item_map[item]["item_group"],
                         item_map[item]["item_name"], warehouse,
-                        qty_dict.bal_qty, qty_dict.bal_val,
-                                               
+                        qty_dict.bal_qty, qty_dict.bal_val,                                             
                         item_map[item]["brand"], company
                     ])
 
@@ -74,7 +73,7 @@ def execute(filters=None):
 				tot_bal_val = 0
                                 
 				tot_bal_qty = tot_bal_qty + rows[6]
-				tot_bal_val = tot_bal_val + rows[7]
+				
 				item_prev = item_work
                                 parent_prev = parent_curr
 		item_count = item_count + 1
@@ -153,9 +152,7 @@ def get_item_warehouse_map(filters):
                 key = (d.company, d.parent, d.item_code, d.warehouse)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
-				"opening_qty": 0.0, "opening_val": 0.0,
-				"in_qty": 0.0, "in_val": 0.0,
-				"out_qty": 0.0, "out_val": 0.0,
+						
 				"bal_qty": 0.0, "bal_val": 0.0,
 				"val_rate": 0.0
 			})
