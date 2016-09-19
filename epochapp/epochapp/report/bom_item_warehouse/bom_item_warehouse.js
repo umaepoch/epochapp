@@ -8,8 +8,8 @@ frappe.query_reports["BOM Item Warehouse"] = {
                         "fieldname":"bom",
                         "label": __("BOM"),
                         "fieldtype": "Link",
-                        "options": "BOM",
-                        "reqd": 1
+                        "options": "BOM"
+                        
                                                
                 },
                 
