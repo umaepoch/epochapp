@@ -17,14 +17,11 @@ def execute(filters=None):
 
 	data = []
 	summ_data = [] 
-        item_group_prev = ""
-        item_group_work = ""
-        comp_prev = ""
-        comp_curr = ""
+        item_prev = ""
+        item_work = ""
+        parent_prev = ""
+        parent_curr = ""
         item_count = 0
-        tot_open_qty = 0
-        tot_in_qty = 0
-        tot_out_qty = 0
         tot_bal_qty = 0
 	tot_bal_val = 0   
    
