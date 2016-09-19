@@ -31,7 +31,6 @@ def execute(filters=None):
                         item, item_map[item]["description"],
                         item_map[item]["item_group"],
                         item_map[item]["item_name"], warehouse,
-                        item_map[item]["stock_uom"], 
                         qty_dict.bal_qty, qty_dict.bal_val,
                                                
                         item_map[item]["brand"], company
@@ -41,34 +40,34 @@ def execute(filters=None):
        		if item_count == 0:
        			item_prev = rows[1]
                         parent_prev = rows[0]
-			tot_bal_qty = tot_bal_qty + rows[7]
-			tot_bal_val = tot_bal_val + rows[8]
+			tot_bal_qty = tot_bal_qty + rows[6]
+			tot_bal_val = tot_bal_val + rows[7]
                         summ_data.append([rows[0], item_prev, rows[2], 
 			 	rows[3], rows[4], rows[5],
 				rows[6], rows[7],
-				rows[8], rows[9], rows[10]				
+				rows[8], rows[9]				
  				])
                 else:
 			item_work = rows[1]
                         parent_curr = rows[0]			
 			if item_prev == item_work:
-				tot_bal_qty = tot_bal_qty + rows[7]
-				tot_bal_val = tot_bal_val + rows[8]
+				tot_bal_qty = tot_bal_qty + rows[6]
+				tot_bal_val = tot_bal_val + rows[7]
         	                summ_data.append([parent_prev, item_prev, rows[2], 
 			 	rows[3], rows[4], rows[5],
 				rows[6], rows[7],
-				rows[8], rows[9], rows[10]		
+				rows[8], rows[9]	
  				])
 			else:
 				summ_data.append([parent_prev, item_prev, " ", 
-			 	" ", " ", " ", " ",
+			 	" ", " ", " ",
 				tot_bal_qty, tot_bal_val, " "
  				])				
 
 				summ_data.append([parent_curr, item_work, rows[2], 
 			 	rows[3], rows[4], rows[5],
 				rows[6], rows[7],
-				rows[8], rows[9], rows[10]
+				rows[8], rows[9]
  				])
                                 
 				tot_bal_qty = 0
@@ -100,7 +99,6 @@ def get_columns():
                 _("Item Group")+"::100",
                 _("Item Name")+"::150",
                 _("Warehouse")+":Link/Warehouse:100",
-                _("Stock UOM")+":Link/UOM:90",
                 _("Balance Qty")+":Float:100",
                 _("Balance Value")+":Float:100",
                 _("Company")+":Link/Company:100"
@@ -159,7 +157,7 @@ def get_item_warehouse_map(filters):
 				"in_qty": 0.0, "in_val": 0.0,
 				"out_qty": 0.0, "out_val": 0.0,
 				"bal_qty": 0.0, "bal_val": 0.0,
-				"val_rate": 0.0, "uom": None
+				"val_rate": 0.0
 			})
 
 		qty_dict = iwb_map[(d.company, d.parent, d.item_code, d.warehouse)]

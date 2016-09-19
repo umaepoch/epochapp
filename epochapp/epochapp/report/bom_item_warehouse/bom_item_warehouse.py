@@ -73,8 +73,8 @@ def execute(filters=None):
 				tot_bal_qty = 0
 				tot_bal_val = 0
                                 
-				tot_bal_qty = tot_bal_qty + rows[7]
-				tot_bal_val = tot_bal_val + rows[8]
+				tot_bal_qty = tot_bal_qty + rows[6]
+				tot_bal_val = tot_bal_val + rows[7]
 				item_prev = item_work
                                 parent_prev = parent_curr
 		item_count = item_count + 1
