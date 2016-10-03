@@ -9,6 +9,7 @@ from erpnext.stock.utils import get_incoming_rate
 
 @frappe.whitelist()
 def set_total_in_words(doc, method):
+print("am i inside")
 from frappe.utils import money_in_words
      company_currency = get_company_currency(doc.company)
 
@@ -26,7 +27,8 @@ from frappe.utils import money_in_words
 
 @frappe.whitelist()
 def get_item_tax(batch_no,warehouse,item_code):
-        item_tax = get_tax(batch_no,warehouse,item_code)
+        msgprint(_("Inside API Item Tax"))
+	item_tax = get_tax(batch_no,warehouse,item_code)
         msgprint(_(item_tax))
         if batch_no:
 		return item_tax
