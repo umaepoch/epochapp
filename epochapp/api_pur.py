@@ -13,6 +13,7 @@ from erpnext.controllers.stock_controller import StockController
 @frappe.whitelist()
 def update_stock_ledger_pur(doc, allow_negative_stock=False, via_landed_cost_voucher=False):
 		update_ordered_qty(doc)
+                msgprint(_("Inside api_pur"))
                	sl_entries = []
 		stock_items = get_stock_items(doc)
 
@@ -21,7 +22,7 @@ def update_stock_ledger_pur(doc, allow_negative_stock=False, via_landed_cost_vou
 				pr_qty = flt(d.qty) * flt(d.conversion_factor)
                                 
 				if pr_qty:
-                                        
+                                        msgprint(_(d.item_tax_amount))
 					sle = doc.get_sl_entries(d, {
 						"actual_qty": flt(pr_qty),
                                                 "item_tax": flt(d.item_tax_amount),
@@ -118,6 +119,7 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 					sle_id = make_entry(doc, sle, allow_negative_stock, via_landed_cost_voucher)
                 
                                         sle.update(sle)
+                                        msgprint(_("Updated SLE"))
                                    #     sle.submit()
 				
 				args = sle.copy()
