@@ -1,31 +1,18 @@
-
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import cint, flt, cstr, comma_or
-from erpnext.setup.utils import get_company_currency
 from frappe import _, throw, msgprint
-
-@frappe.whitelist()
-def set_total_in_words(doc, method):
-from frappe.utils import money_in_words
-    msgprint(_("Inside Total in words"))
-    company_currency = get_company_currency(doc.company)
-
-    disable_rounded_total = cint(frappe.db.get_value("Global Defaults", None, "disable_rounded_total"))
-
-    if doc.meta.get_field("base_in_words"):
-        doc.base_in_words = money_in_words(disable_rounded_total and
-            abs(doc.base_grand_total) or abs(doc.base_rounded_total), company_currency)
-    if doc.meta.get_field("in_words"):
-        doc.in_words = money_in_words(disable_rounded_total and
-            abs(doc.grand_total) or abs(doc.rounded_total), doc.currency)
-    if doc.meta.get_field("amount_of_duty_in_words"):
-        doc.amount_of_duty_in_words = money_in_words(disable_rounded_total and
-            abs(doc.excise_amount) or abs(doc.excise_amount), doc.currency)
+from frappe.utils import flt, cint, add_days, cstr
+import json
+from erpnext.setup.utils import get_company_currency
+from erpnext.stock.get_item_details import get_bin_details
+from erpnext.stock.utils import get_incoming_rate
+from erpnext.accounts.party import get_party_details
+from erpnext.stock.get_item_details import get_conversion_factor
+from erpnext.controllers.stock_controller import StockController
 
 
 @frappe.whitelist()
-def update_stock_ledger(doc, method, allow_negative_stock=False, via_landed_cost_voucher=False):
+def update_stock_ledger_pur(doc, allow_negative_stock=False, via_landed_cost_voucher=False):
 		update_ordered_qty()
                 msgprint(_("Inside 1"))
 		sl_entries = []
@@ -71,30 +58,6 @@ def update_stock_ledger(doc, method, allow_negative_stock=False, via_landed_cost
               
 		self.make_sl_entries(sl_entries, allow_negative_stock=allow_negative_stock,
 			via_landed_cost_voucher=via_landed_cost_voucher)
-
-
-
-@frappe.whitelist()
-def get_item_tax(batch_no,warehouse,item_code):
-        item_tax = get_tax(batch_no,warehouse,item_code)
-        msgprint(_(item_tax))
-        if batch_no:
-		return item_tax
-
-def get_tax(batch_no,warehouse,item_code):
-                item_tax = flt(frappe.db.sql("""select item_tax
-			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s""",
-			(warehouse, item_code, batch_no))[0][0])
-
-                actual_qty = flt(frappe.db.sql("""select actual_qty
-			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s""",
-			(warehouse, item_code, batch_no))[0][0])
-                item_tax = flt(item_tax)/ flt(actual_qty)
-	        return item_tax
-
-
 
 
 def update_ordered_qty(self):

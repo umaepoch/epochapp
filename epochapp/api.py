@@ -21,7 +21,7 @@ def get_tax(batch_no,warehouse,item_code):
 def set_total_in_words(doc, method):
     from frappe.utils import money_in_words
     company_currency = get_company_currency(doc.company)
-
+    
     disable_rounded_total = cint(frappe.db.get_value("Global Defaults", None, "disable_rounded_total"))
 
     if doc.meta.get_field("base_in_words"):
@@ -37,9 +37,8 @@ def set_total_in_words(doc, method):
 
 @frappe.whitelist()
 def get_item_tax(batch_no,warehouse,item_code):
-        msgprint(_("Inside API Item Tax"))
-	item_tax = get_tax(batch_no,warehouse,item_code)
-        msgprint(_(item_tax))
+  	item_tax = get_tax(batch_no,warehouse,item_code)
+      
         if batch_no:
 		return item_tax
 

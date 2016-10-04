@@ -81,6 +81,9 @@ app_license = "MIT"
 doc_events = {
        "Sales Invoice": {
                 "validate": "epochapp.api.set_total_in_words"
+             },
+       "Purchase Receipt": {
+                "validate": "epochapp.api_pur.update_stock_ledger_pur"
              }
 }
 
