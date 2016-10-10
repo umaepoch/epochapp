@@ -109,9 +109,7 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 	
 			for sle in sl_entries:
 				sle_id = None
-                                msgprint(_("Inside Make SL Entries"))
-				msgprint(_(sle))
-				if sle.get('is_cancelled') == 'Yes':
+                               	if sle.get('is_cancelled') == 'Yes':
         				sle['actual_qty'] = -flt(sle['actual_qty'])
 				if sle.get("actual_qty") or sle.get("voucher_type")=="Stock Reconciliation":
 		
@@ -119,15 +117,12 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 					frappe.db.sql("""update `tabStock Ledger Entry` set item_tax = %s 
 				                        where batch_no=%s and item_code=%s and voucher_no = %s and warehouse = %s""",
 						(sle['item_tax'], sle['batch_no'], sle['item_code'], sle['voucher_no'], sle['warehouse']))
-                                        msgprint(_("After make entry"))
-                                        msgprint(_(sle))
+                                        
                                         sle.update(sle)
-                                        msgprint(_("After update"))
-                                        msgprint(_(sle))
-                                        msgprint(_("Updated SLE"))
+                                        
                                      				
 				args = sle.copy()
-                                msgprint(_(sle_id))
+                                
 				args.update({
 					"sle_id": sle_id,
 					"is_amended": is_amended
@@ -146,15 +141,13 @@ def set_as_cancel(voucher_type, voucher_no):
 
 def make_entry(doc, sle, allow_negative_stock=False, via_landed_cost_voucher=False):
       	sle.update({"doctype": "Stock Ledger Entry"})
-        msgprint(_(sle))
+        
    #   	sle1 = frappe.get_doc(sle)
-        msgprint(_("Inside Make Entry"))
-	msgprint(_(sle))
+        
   #    	sle.flags.ignore_permissions = 1
 	sle.allow_negative_stock=allow_negative_stock
 	sle.via_landed_cost_voucher = via_landed_cost_voucher
-        msgprint(_("Inside Make Entry 2"))
-        msgprint(_(sle))
+        
 	
 #     	sle.insert()
  
@@ -199,8 +192,7 @@ def get_sl_entries(doc, d, args):
 			"project": d.get("project"),
 			"is_cancelled": doc.docstatus==2 and "Yes" or "No"
 		})
-                msgprint(_("Inside get sl entries"))
-                msgprint(_(sl_dict))
+                
 		sl_dict.update(args)
 		return sl_dict
 
