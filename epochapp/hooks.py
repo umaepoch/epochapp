@@ -83,8 +83,8 @@ doc_events = {
                 "validate": "epochapp.api.set_total_in_words"
              },
        "Purchase Receipt": {
-                "validate": "epochapp.api_pur.update_stock_ledger_pur"
-             }
+               "on_submit": "epochapp.api_pur.update_stock_ledger"
+           }
 }
 
 doctype_js = {

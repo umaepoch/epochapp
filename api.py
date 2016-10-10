@@ -134,3 +134,13 @@ def make_sl_entries(self, sl_entries, is_amended=None, allow_negative_stock=Fals
 		from erpnext.stock.stock_ledger import make_sl_entries
 		make_sl_entries(sl_entries, is_amended, allow_negative_stock, via_landed_cost_voucher)
 
+@frappe.whitelist()
+def set_item_tax(batch_no, item_code, tax_amount):
+        msgprint(_(tax_amount))
+        frappe.db.sql("""update `tabBatch set item_tax = %s 
+				where batch_id=%s and item_code=%s""",
+			(tax_amount, batch_no, item_code))
+
+        return
+
+
