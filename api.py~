@@ -23,6 +23,20 @@ from frappe.utils import money_in_words
         	doc.amount_of_duty_in_words = money_in_words(disable_rounded_total and
             	abs(doc.excise_amount) or abs(doc.excise_amount), doc.currency)
 
+@frappe.whitelist()
+def get_item_stock(item_code):
+        	item_stock = get_stock(item_code)
+	        msgprint(_(item_stock))
+		return item_stock
+
+def get_stock(item_code):
+                item_stock = flt(frappe.db.sql("""select sum(actual_qty)
+			from `tabStock Ledger Entry`
+			where item_code=%s""",
+			(item_code))[0][0])
+
+                return item_stock
+
 
 @frappe.whitelist()
 def update_stock_ledger(doc, method, allow_negative_stock=False, via_landed_cost_voucher=False):
