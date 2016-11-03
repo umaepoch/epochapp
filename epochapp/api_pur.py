@@ -115,8 +115,8 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 		
 					sle_id = make_entry(doc, sle, allow_negative_stock, via_landed_cost_voucher)
 					frappe.db.sql("""update `tabStock Ledger Entry` set item_tax = %s 
-				                        where batch_no=%s and item_code=%s and voucher_no = %s and warehouse = %s""",
-						(sle['item_tax'], sle['batch_no'], sle['item_code'], sle['voucher_no'], sle['warehouse']))
+				                        where item_code=%s and voucher_no = %s and warehouse = %s""",
+						(sle['item_tax'], sle['item_code'], sle['voucher_no'], sle['warehouse']))
                                         
                                         sle.update(sle)
                                         
