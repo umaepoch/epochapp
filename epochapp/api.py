@@ -63,8 +63,9 @@ def get_stock(item_code):
        	        return tot_stock
 
 @frappe.whitelist()
-def get_item_tax(purchase_receipt_number, warehouse,item_code):
-  	item_tax = get_tax(purchase_receipt_number,warehouse,item_code)
+def get_item_tax(purchase_receipt_number, warehouse, item_code):
+	msgprint("Inside get_item_tax")
+  	item_tax = get_tax(purchase_receipt_number, warehouse, item_code)
       
         if purchase_receipt_number:
 		return item_tax
