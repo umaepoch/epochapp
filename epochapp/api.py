@@ -14,12 +14,12 @@ def get_tax(purchase_receipt_number,warehouse,item_code):
                 item_tax = flt(frappe.db.sql("""select item_tax
 			from `tabStock Ledger Entry`
 			where warehouse=%s and item_code=%s and voucher_no=%s""",
-			(warehouse, item_code, purchase_receipt_number)))
+			(warehouse, item_code, purchase_receipt_number))[0][0])
                 msgprint(_(item_tax))
                 actual_qty = flt(frappe.db.sql("""select actual_qty
 			from `tabStock Ledger Entry`
 			where warehouse=%s and item_code=%s and voucher_no=%s""",
-			(warehouse, item_code, purchase_receipt_number)))
+			(warehouse, item_code, purchase_receipt_number))[0][0])
                 item_tax = flt(item_tax)/ flt(actual_qty)
 	        return item_tax
 
