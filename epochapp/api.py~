@@ -6,16 +6,20 @@ from frappe import _, throw, msgprint
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 
-def get_tax(batch_no,warehouse,item_code):
+def get_tax(purchase_receipt_number,warehouse,item_code):
+	        msgprint(_(warehouse))
+		msgprint(_(purchase_receipt_number))
+		msgprint(_(item_code))
+		
                 item_tax = flt(frappe.db.sql("""select item_tax
 			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s""",
-			(warehouse, item_code, batch_no))[0][0])
-
+			where warehouse=%s and item_code=%s and voucher_no=%s""",
+			(warehouse, item_code, purchase_receipt_number))[0][0])
+                msgprint(_(item_tax))
                 actual_qty = flt(frappe.db.sql("""select actual_qty
 			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s""",
-			(warehouse, item_code, batch_no))[0][0])
+			where warehouse=%s and item_code=%s and voucher_no=%s""",
+			(warehouse, item_code, purchase_receipt_number))[0][0])
                 item_tax = flt(item_tax)/ flt(actual_qty)
 	        return item_tax
 
@@ -37,32 +41,33 @@ def set_total_in_words(doc, method):
             abs(doc.excise_amount) or abs(doc.excise_amount), doc.currency)
 
 @frappe.whitelist()
-def get_item_stock(item_code, warehouse):
-        	item_stock = get_stock(item_code, warehouse)
+def get_item_stock(item_code):
+        	item_stock = get_stock(item_code)
 	        
 		return item_stock
 
-def get_stock(item_code, warehouse):
+def get_stock(item_code):
 
                 item_stock = flt(frappe.db.sql("""select sum(actual_qty)
 			from `tabStock Ledger Entry`
-			where item_code=%s and warehouse = %s""",
-			(item_code, warehouse))[0][0])
+			where item_code=%s""",
+			(item_code))[0][0])
 
 		stock_recon = flt(frappe.db.sql("""select sum(qty_after_transaction)
 			from `tabStock Ledger Entry`
-			where item_code=%s and warehouse = %s and voucher_type = 'Stock Reconciliation'""",
-			(item_code, warehouse))[0][0])
+			where item_code=%s and voucher_type = 'Stock Reconciliation'""",
+			(item_code))[0][0])
 
 		tot_stock = item_stock + stock_recon
 		
        	        return tot_stock
 
 @frappe.whitelist()
-def get_item_tax(batch_no,warehouse,item_code):
-  	item_tax = get_tax(batch_no,warehouse,item_code)
+def get_item_tax(purchase_receipt_number, warehouse, item_code):
+	msgprint("Inside get_item_tax")
+  	item_tax = get_tax(purchase_receipt_number, warehouse, item_code)
       
-        if batch_no:
+        if purchase_receipt_number:
 		return item_tax
 
 
