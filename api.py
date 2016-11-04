@@ -89,22 +89,24 @@ def update_stock_ledger(doc, method, allow_negative_stock=False, via_landed_cost
 
 
 @frappe.whitelist()
-def get_item_tax(batch_no,warehouse,item_code):
-        item_tax = get_tax(batch_no,warehouse,item_code)
+def get_item_tax(purchase_receipt_number,warehouse,item_code):
+	msgprint(_("Inside get_item_tax of epochapp/api"))
+	msgprint(_(purchase_receipt_number))
+        item_tax = get_tax(purchase_receipt_number,warehouse,item_code)
         msgprint(_(item_tax))
-        if batch_no:
+        if purchase_receipt_number:
 		return item_tax
 
-def get_tax(batch_no,warehouse,item_code):
+def get_tax(purchase_receipt_number,warehouse,item_code):
                 item_tax = flt(frappe.db.sql("""select item_tax
 			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s""",
-			(warehouse, item_code, batch_no))[0][0])
+			where warehouse=%s and item_code=%s and voucher_no=%s""",
+			(warehouse, item_code, purchase_receipt_number))[0][0])
 
                 actual_qty = flt(frappe.db.sql("""select actual_qty
 			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s""",
-			(warehouse, item_code, batch_no))[0][0])
+			where warehouse=%s and item_code=%s and voucher_no=%s""",
+			(warehouse, item_code, purchase_receipt_number))[0][0])
                 item_tax = flt(item_tax)/ flt(actual_qty)
 	        return item_tax
 
