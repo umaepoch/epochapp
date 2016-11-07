@@ -42,23 +42,23 @@ def set_total_in_words(doc, method):
             abs(doc.excise_amount) or abs(doc.excise_amount), doc.currency)
 
 @frappe.whitelist()
-def get_item_stock(item_code):
+def get_item_stock(item_code, company):
 		
-        	item_stock = get_stock(item_code)
+        	item_stock = get_stock(item_code, company)
 	        
 		return item_stock
 
-def get_stock(item_code):
+def get_stock(item_code, company):
 
                 item_stock = flt(frappe.db.sql("""select sum(actual_qty)
 			from `tabStock Ledger Entry`
-			where item_code=%s""",
-			(item_code))[0][0])
+			where item_code=%s and company = %s""",
+			(item_code, company))[0][0])
 
 		stock_recon = flt(frappe.db.sql("""select sum(qty_after_transaction)
 			from `tabStock Ledger Entry`
-			where item_code=%s and voucher_type = 'Stock Reconciliation'""",
-			(item_code))[0][0])
+			where item_code=%s and company = %s and voucher_type = 'Stock Reconciliation'""",
+			(item_code, company))[0][0])
 
 		tot_stock = item_stock + stock_recon
 		

@@ -66,9 +66,7 @@ def get_stock(item_code, company):
 
 @frappe.whitelist()
 def get_warehouse_stock(item_code, warehouse):
-		msgprint(_("Inside warehouse stock"))
-		msgprint(_(warehouse))
-        	item_whs_stock = get_whs_stock(item_code, warehouse)
+		item_whs_stock = get_whs_stock(item_code, warehouse)
 	        
 		return item_whs_stock
 
