@@ -18,70 +18,78 @@ def execute(filters=None):
 
         data = []
         summ_data = [] 
-        item_prev = "" 
-        item_work = "" 
-        item_count = 0 
+        order_prev = "" 
+        order_work = "" 
+        order_count = 0 
         tot_bal_qty = 0 
-	tot_bal_val = 0  
-        tot_si_qty = 0
-        for (company, item, sales_order, warehouse) in sorted(iwb_map):
-                qty_dict = iwb_map[(company, item, sales_order, warehouse)]
+	tot_si_qty = 0
+	tot_del_qty = 0
+	tot_pend_qty = 0
+
+        for (company, sales_order, item, warehouse) in sorted(iwb_map):
+                qty_dict = iwb_map[(company, sales_order, item, warehouse)]
                 data.append([
-                        item, item_map[item]["description"],
-                        item_map[item]["item_group"],
-                        item_map[item]["item_name"], sales_order, warehouse,
-                        item_map[item]["stock_uom"], 
-                        qty_dict.bal_qty, qty_dict.bal_val, qty_dict.si_qty,
-                                               
-                        item_map[item]["brand"], company
+                        sales_order, item, item_map[item]["item_group"],
+			item_map[item]["description"], item_map[item]["stock_uom"],                    
+                        item_map[item]["item_name"], 
+			qty_dict.si_qty, qty_dict.del_qty, qty_dict.pend_qty,
+			warehouse,
+                        qty_dict.bal_qty,                                               
+                        company
                     ])
 	for rows in data: 
-       		if item_count == 0: 
-       			item_prev = rows[0] 
-                        tot_bal_qty = tot_bal_qty + rows[7] 
-			tot_bal_val = tot_bal_val + rows[8] 
-			tot_si_qty = tot_si_qty + rows[9]
-                        summ_data.append([item_prev, rows[1], rows[2],
-			 	rows[3], rows[4], rows[5], rows[6], rows[9],
-				rows[7], rows[8], 
+       		if order_count == 0: 
+       			order_prev = rows[0] 
+			tot_si_qty = tot_si_qty + rows[6]
+                        tot_del_qty = tot_del_qty + rows[7] 
+			tot_pend_qty = tot_pend_qty + rows[8] 
+			tot_bal_qty = tot_bal_qty + rows[10]
+                        summ_data.append([order_prev, rows[1], rows[2],
+			 	rows[3], rows[4], rows[5], rows[6], 
+				rows[7], rows[8], rows[9],
 				rows[10], rows[11]
  				]) 
                 else: 
-			item_work = rows[0] 
-			if item_prev == item_work: 
-				tot_bal_qty = tot_bal_qty + rows[7] 
-				tot_bal_val = tot_bal_val + rows[8] 
-				tot_si_qty = tot_si_qty + rows[9]
-        	                summ_data.append([item_prev, rows[1], rows[2],
-			 	rows[3], rows[4], rows[5], rows[6], rows[9],
-				rows[7], rows[8], 
-				rows[10], rows[11]				 
+			order_work = rows[0] 
+			if order_prev == order_work: 
+				tot_si_qty = tot_si_qty + rows[6]
+                        	tot_del_qty = tot_del_qty + rows[7] 
+				tot_pend_qty = tot_pend_qty + rows[8] 
+				tot_bal_qty = tot_bal_qty + rows[10]
+        	                summ_data.append([order_prev, rows[1], rows[2],
+			 	rows[3], rows[4], rows[5], rows[6], 
+				rows[7], rows[8], rows[9],
+				rows[10], rows[11]
  				]) 
 			else: 
-				summ_data.append([item_prev, " ", 
-			 	" ", " ", " ", " ", " ", tot_si_qty,
-				tot_bal_qty, tot_bal_val, " "
+				summ_data.append([order_prev, " ", 
+			 	" ", " ", " ", " ", tot_si_qty, tot_del_qty,
+				tot_pend_qty, " ", 
+				tot_bal_qty, " "
  				])				 
 
-				summ_data.append([item_work, rows[1], rows[2], 
-			 	rows[3], rows[4], rows[5], rows[6], rows[9], 
-				rows[7], rows[8], 
-				rows[10], rows[11] 
+				summ_data.append([order_work, rows[1], rows[2],
+			 	rows[3], rows[4], rows[5], rows[6], 
+				rows[7], rows[8], rows[9],
+				rows[10], rows[11]
  				]) 
                                 
 				tot_bal_qty = 0 
-				tot_bal_val = 0 
- 				tot_si_qty = 0
-                                tot_bal_qty = tot_bal_qty + rows[7] 
-				tot_bal_val = tot_bal_val + rows[8] 
-				tot_si_qty = tot_si_qty + rows[9] 
-				item_prev = item_work 
+				tot_si_qty = 0
+				tot_del_qty = 0
+				tot_pend_qty = 0
+                                tot_si_qty = tot_si_qty + rows[6]
+                        	tot_del_qty = tot_del_qty + rows[7] 
+				tot_pend_qty = tot_pend_qty + rows[8] 
+				tot_bal_qty = tot_bal_qty + rows[10]
+				order_prev = order_work 
                                 
-		item_count = item_count + 1 
-	summ_data.append([item_prev, " ", 
-			 	" ", " ", " ", " ", " ", tot_si_qty,
-				tot_bal_qty, tot_bal_val, " "
- 				])	 
+		order_count = order_count + 1 
+	summ_data.append([order_prev, " ", 
+			 	" ", " ", " ", " ", tot_si_qty, tot_del_qty,
+				tot_pend_qty, " ", 
+				tot_bal_qty, " "
+ 				])		 
 		 
 		 
 						 
@@ -91,16 +99,17 @@ def execute(filters=None):
 def get_columns():
         """return columns"""
         columns = [
+		_("Sales Order Number")+"::150",
                 _("Item")+":Link/Item:100",
-                _("Description")+"::140",
-                _("Item Group")+"::100",
+		_("Item Group")+"::100",
+	        _("Description")+"::140",
+       	        _("Stock UOM")+":Link/UOM:90",       
                 _("Item Name")+"::150",
-                _("Sales Order Number")+"::150",
-                _("Warehouse")+":Link/Warehouse:100",
-                _("Stock UOM")+":Link/UOM:90",
 		_("Sales Order Qty")+":Float:100",
-                _("Balance Qty")+":Float:100",
-                _("Balance Value")+":Float:100",
+		_("Delivered Qty")+":Float:100",
+         	_("Pending Qty")+":Float:100",   
+                _("Warehouse")+":Link/Warehouse:100",            
+		_("Balance Qty")+":Float:100",
                 _("Company")+":Link/Company:100"
                 
          ]
@@ -130,9 +139,9 @@ def get_conditions(filters):
 def get_stock_ledger_entries(filters):
         conditions = get_conditions(filters)
 	
-        return frappe.db.sql("""select si.item_code, si.parent as sales_order, sl.warehouse, posting_date, si.qty as si_qty, sl.actual_qty, sl.valuation_rate, sl.company, voucher_type, qty_after_transaction, stock_value_difference
-                from `tabStock Ledger Entry` sl, `tabSales Order Item` si
-                where sl.docstatus < 2 and sl.item_code = si.item_code %s order by si.item_code, si.parent, sl.warehouse, sl.name""" %
+        return frappe.db.sql("""select si.parent as sales_order, si.item_code, sl.warehouse, posting_date, si.qty as si_qty, si.delivered_qty as del_qty, sl.actual_qty, sl.valuation_rate, sl.company, voucher_type, qty_after_transaction, stock_value_difference
+                from `tabStock Ledger Entry` sl, `tabSales Order Item` si, `tabSales Order` so
+                where sl.docstatus < 2 and sl.item_code = si.item_code and so.status != "Cancelled" and so.name = si.parent %s order by si.parent, si.item_code, sl.warehouse, sl.name""" %
                 conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
@@ -143,18 +152,19 @@ def get_item_warehouse_map(filters):
         sle = get_stock_ledger_entries(filters)
 	
         for d in sle:
-                key = (d.company, d.item_code, d.sales_order, d.warehouse)
+                key = (d.company, d.sales_order, d.item_code, d.warehouse)
                 if key not in iwb_map:
                         iwb_map[key] = frappe._dict({
                                 "opening_qty": 0.0, "opening_val": 0.0,
                                 "in_qty": 0.0, "in_val": 0.0,
                                 "out_qty": 0.0, "out_val": 0.0,
                                 "bal_qty": 0.0, "bal_val": 0.0,
-                                "si_qty": 0.0,
+                                "si_qty": 0.0, "del_qty": 0.0,
+				"pend_qty": 0.0,
                                 "val_rate": 0.0, "uom": None
                         })
 
-                qty_dict = iwb_map[(d.company, d.item_code, d.sales_order, d.warehouse)]
+                qty_dict = iwb_map[(d.company, d.sales_order, d.item_code, d.warehouse)]
 
                 if d.voucher_type == "Stock Reconciliation":
                         qty_diff = flt(d.qty_after_transaction) - qty_dict.bal_qty
@@ -163,6 +173,10 @@ def get_item_warehouse_map(filters):
 
                 value_diff = flt(d.stock_value_difference)
                 qty_dict.si_qty = d.si_qty
+                qty_dict.del_qty = d.del_qty
+                
+                if qty_dict.si_qty > qty_dict.del_qty:
+                	qty_dict.pend_qty = qty_dict.si_qty - qty_dict.del_qty
 
                 if d.posting_date < from_date:
                         qty_dict.opening_qty += qty_diff
