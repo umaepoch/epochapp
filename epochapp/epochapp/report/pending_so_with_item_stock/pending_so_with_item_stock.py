@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
+from frappe import _, msgprint
 from frappe.utils import flt, getdate
 
 def execute(filters=None):
@@ -12,6 +12,7 @@ def execute(filters=None):
         validate_filters(filters)
 
         columns = get_columns()
+       
         item_map = get_item_details(filters)
         iwb_map = get_item_warehouse_map(filters)
 
@@ -23,12 +24,12 @@ def execute(filters=None):
         tot_bal_qty = 0 
 	tot_bal_val = 0  
         tot_si_qty = 0
-        for (company, item, warehouse) in sorted(iwb_map):
-                qty_dict = iwb_map[(company, item, warehouse)]
+        for (company, item, sales_order, warehouse) in sorted(iwb_map):
+                qty_dict = iwb_map[(company, item, sales_order, warehouse)]
                 data.append([
                         item, item_map[item]["description"],
                         item_map[item]["item_group"],
-                        item_map[item]["item_name"], warehouse,
+                        item_map[item]["item_name"], sales_order, warehouse,
                         item_map[item]["stock_uom"], 
                         qty_dict.bal_qty, qty_dict.bal_val, qty_dict.si_qty,
                                                
@@ -37,48 +38,48 @@ def execute(filters=None):
 	for rows in data: 
        		if item_count == 0: 
        			item_prev = rows[0] 
-                        tot_bal_qty = tot_bal_qty + rows[6] 
-			tot_bal_val = tot_bal_val + rows[7] 
-			tot_si_qty = tot_si_qty + rows[8]
+                        tot_bal_qty = tot_bal_qty + rows[7] 
+			tot_bal_val = tot_bal_val + rows[8] 
+			tot_si_qty = tot_si_qty + rows[9]
                         summ_data.append([item_prev, rows[1], rows[2],
-			 	rows[3], rows[4], rows[5], rows[8],
-				rows[6], rows[7], 
-				rows[9], rows[10]
+			 	rows[3], rows[4], rows[5], rows[6], rows[9],
+				rows[7], rows[8], 
+				rows[10], rows[11]
  				]) 
                 else: 
 			item_work = rows[0] 
 			if item_prev == item_work: 
-				tot_bal_qty = tot_bal_qty + rows[6] 
-				tot_bal_val = tot_bal_val + rows[7] 
-				tot_si_qty = tot_si_qty + rows[8]
+				tot_bal_qty = tot_bal_qty + rows[7] 
+				tot_bal_val = tot_bal_val + rows[8] 
+				tot_si_qty = tot_si_qty + rows[9]
         	                summ_data.append([item_prev, rows[1], rows[2],
-			 	rows[3], rows[4], rows[5], rows[8],
-				rows[6], rows[7], 
-				rows[9], rows[10]				 
+			 	rows[3], rows[4], rows[5], rows[6], rows[9],
+				rows[7], rows[8], 
+				rows[10], rows[11]				 
  				]) 
 			else: 
 				summ_data.append([item_prev, " ", 
-			 	" ", " ", " ", " ", tot_si_qty,
+			 	" ", " ", " ", " ", " ", tot_si_qty,
 				tot_bal_qty, tot_bal_val, " "
  				])				 
 
 				summ_data.append([item_work, rows[1], rows[2], 
-			 	rows[3], rows[4], rows[5], rows[8], 
-				rows[6], rows[7], 
-				rows[9], rows[10] 
+			 	rows[3], rows[4], rows[5], rows[6], rows[9], 
+				rows[7], rows[8], 
+				rows[10], rows[11] 
  				]) 
                                 
 				tot_bal_qty = 0 
 				tot_bal_val = 0 
  				tot_si_qty = 0
-                                tot_bal_qty = tot_bal_qty + rows[6] 
-				tot_bal_val = tot_bal_val + rows[7] 
-				tot_si_qty = tot_si_qty + rows[8] 
+                                tot_bal_qty = tot_bal_qty + rows[7] 
+				tot_bal_val = tot_bal_val + rows[8] 
+				tot_si_qty = tot_si_qty + rows[9] 
 				item_prev = item_work 
                                 
 		item_count = item_count + 1 
 	summ_data.append([item_prev, " ", 
-			 	" ", " ", " ", " ", tot_si_qty,
+			 	" ", " ", " ", " ", " ", tot_si_qty,
 				tot_bal_qty, tot_bal_val, " "
  				])	 
 		 
@@ -94,6 +95,7 @@ def get_columns():
                 _("Description")+"::140",
                 _("Item Group")+"::100",
                 _("Item Name")+"::150",
+                _("Sales Order Number")+"::150",
                 _("Warehouse")+":Link/Warehouse:100",
                 _("Stock UOM")+":Link/UOM:90",
 		_("Sales Order Qty")+":Float:100",
@@ -116,7 +118,7 @@ def get_conditions(filters):
                 frappe.throw(_("'To Date' is required"))
 
         if filters.get("item_code"):
-                conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+                conditions += " and si.item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
      
         if filters.get("name"):
                 conditions += " and si.parent = '%s'" % frappe.db.escape(filters.get("name"), percent=False)
@@ -127,21 +129,21 @@ def get_conditions(filters):
 
 def get_stock_ledger_entries(filters):
         conditions = get_conditions(filters)
-        return frappe.db.sql("""select si.item_code, sl.warehouse, posting_date, si.qty as si_qty, sl.actual_qty, sl.valuation_rate,
-                        company, voucher_type, qty_after_transaction, stock_value_difference
+	
+        return frappe.db.sql("""select si.item_code, si.parent as sales_order, sl.warehouse, posting_date, si.qty as si_qty, sl.actual_qty, sl.valuation_rate, sl.company, voucher_type, qty_after_transaction, stock_value_difference
                 from `tabStock Ledger Entry` sl, `tabSales Order Item` si
-                where sl.docstatus < 2 and sl.item_code = si.item_code %s order by posting_date, posting_time, sl.name""" %
+                where sl.docstatus < 2 and sl.item_code = si.item_code %s order by si.item_code, si.parent, sl.warehouse, sl.name""" %
                 conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
         iwb_map = {}
         from_date = getdate(filters["from_date"])
         to_date = getdate(filters["to_date"])
-
+	
         sle = get_stock_ledger_entries(filters)
-
+	
         for d in sle:
-                key = (d.company, d.item_code, d.warehouse)
+                key = (d.company, d.item_code, d.sales_order, d.warehouse)
                 if key not in iwb_map:
                         iwb_map[key] = frappe._dict({
                                 "opening_qty": 0.0, "opening_val": 0.0,
@@ -152,7 +154,7 @@ def get_item_warehouse_map(filters):
                                 "val_rate": 0.0, "uom": None
                         })
 
-                qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
+                qty_dict = iwb_map[(d.company, d.item_code, d.sales_order, d.warehouse)]
 
                 if d.voucher_type == "Stock Reconciliation":
                         qty_diff = flt(d.qty_after_transaction) - qty_dict.bal_qty
@@ -186,7 +188,7 @@ def get_item_details(filters):
         if filters.get("item_code"):
                 condition = "where item_code=%s"
                 value = (filters["item_code"],)
-
+	
         items = frappe.db.sql("""select item_group, item_name, stock_uom, name, brand, description
                 from tabItem {condition}""".format(condition=condition), value, as_dict=1)
 

@@ -9,7 +9,7 @@ frappe.query_reports["Pending SO with Item Stock"] = {
                         "label": __("Sales Order"),
                         "fieldtype": "Link",
                         "options": "Sales Order",
-                        "reqd": 1
+                        "reqd": 0
                 },
                 
                 {      "fieldname":"from_date",
