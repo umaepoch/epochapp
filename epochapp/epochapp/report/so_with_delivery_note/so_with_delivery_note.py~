@@ -187,7 +187,6 @@ def get_item_map(filters):
               		qty_dict.pend_qty = qty_dict.si_qty - qty_dict.del_qty - qty_dict.delivered_qty
 
                
-
         return iwb_map
 
 def get_item_details(filters):
