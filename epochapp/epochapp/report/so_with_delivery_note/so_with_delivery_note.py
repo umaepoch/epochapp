@@ -20,60 +20,87 @@ def execute(filters=None):
         summ_data = [] 
         order_prev = "" 
         order_work = "" 
+        item_prev = ""
+        item_work = ""
         order_count = 0 
+	item_count = 0
         tot_bal_qty = 0 
 	tot_si_qty = 0
 	tot_del_qty = 0
 	tot_pend_qty = 0
+	item_pend_qty = 0
+	item_del_qty = 0
 
         for (sales_order, item, del_note) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, item, del_note)]
                 data.append([
-                        sales_order, qty_dict.date, qty_dict.customer, item, 
+                        sales_order, qty_dict.so_date, qty_dict.del_date, qty_dict.customer, item, 
 			item_map[item]["item_group"], item_map[item]["description"], item_map[item]["brand"],                    
-                        qty_dict.si_qty, qty_dict.del_date, del_note, qty_dict.del_qty
+                        qty_dict.si_qty, del_note, qty_dict.del_qty, qty_dict.pend_qty
                         
                     ])
 	for rows in data: 
        		if order_count == 0: 
        			order_prev = rows[0] 
-			tot_si_qty = tot_si_qty + rows[7]
+ 			item_prev = rows[4]
+			tot_si_qty = tot_si_qty + rows[8]
                         tot_del_qty = tot_del_qty + rows[10] 
+			item_pend_qty = rows[8] - rows[10] 
+			item_del_qty = rows[10]
+			tot_pend_qty = tot_si_qty - tot_del_qty
 			summ_data.append([order_prev, rows[1], rows[2],
 			 	rows[3], rows[4], rows[5], rows[6], 
-				rows[7], rows[8], rows[9], rows[10]
+				rows[7], rows[8], rows[9], rows[10], item_pend_qty
  				]) 
                 else: 
-			order_work = rows[0] 
+			order_work = rows[0]
+                        item_work = rows[4]
 			if order_prev == order_work: 
-				tot_si_qty = tot_si_qty + rows[7]
-                        	tot_del_qty = tot_del_qty + rows[10] 
+				
+                        	tot_del_qty = tot_del_qty + rows[10]
+				item_del_qty = item_del_qty + rows[10]
+				
+                                if item_prev == item_work:
+					item_pend_qty = rows[8] - item_del_qty
+				
+				else:
+					item_prev = item_work
+					item_del_qty = rows[10]
+				
+					item_pend_qty = 0
+					tot_si_qty = tot_si_qty + rows[8]
+					item_pend_qty = rows[8] - item_del_qty		
+				tot_pend_qty = tot_si_qty - tot_del_qty
 				summ_data.append([order_prev, rows[1], rows[2],
 			 	rows[3], rows[4], rows[5], rows[6], 
-				rows[7], rows[8], rows[9], rows[10]
+				rows[7], rows[8], rows[9], rows[10], item_pend_qty,
  				]) 
 			else: 
 				summ_data.append([order_prev, " ", 
-			 	" ", " ", " ", " ", " ", tot_si_qty, " ", " ", tot_del_qty
+			 	" ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty
 				
- 				])				 
+ 				])	
+				item_pend_qty = 0
+				item_del_qty = rows[10]			 
+				item_pend_qty = rows[8] - rows[10] - item_pend_qty
 
 				summ_data.append([order_work, rows[1], rows[2],
 			 	rows[3], rows[4], rows[5], rows[6], 
-				rows[7], rows[8], rows[9], rows[10]
+				rows[7], rows[8], rows[9], rows[10], item_pend_qty
  				]) 
                                 
 				tot_si_qty = 0
 				tot_del_qty = 0
-				
-                                tot_si_qty = tot_si_qty + rows[7]
+				tot_pend_qty = 0
+                                tot_si_qty = tot_si_qty + rows[8]
                         	tot_del_qty = tot_del_qty + rows[10] 
-				
+				tot_pend_qty = tot_si_qty - tot_del_qty
 				order_prev = order_work 
-                                
+                                item_prev = item_work
+
 		order_count = order_count + 1 
 	summ_data.append([order_prev, " ", 
-			 	" ", " ", " ", " ", " ", tot_si_qty, " ", " ", tot_del_qty
+			 	" ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty
  				])		 
 		 
 		 
@@ -86,16 +113,17 @@ def get_columns():
                
         columns = [
 		_("Sales Order Number")+":Link/Sales Order:150",
-		_("Sales Order Date")+"::150",
+		_("Posting Date")+"::150",
+                _("Delivery Date")+"::100",
 		_("Customer")+"::150",
                 _("Item")+":Link/Item:100",
 		_("Item Group")+"::100",
 	        _("Description")+"::140",
        	        _("Brand")+":Link/UOM:90",   
 		_("Ordered Qty")+":Float:100",    
-                _("Delivered Date")+"::100",
-		_("Delivered Note")+":Link/Delivery Note:100",
-         	_("Delivered Qty")+":Float:100"                        
+               	_("Delivery Note")+":Link/Delivery Note:100",
+         	_("Delivered Qty")+":Float:100",
+		_("Balance Qty")+":Float:100"                         
 		                         
          ]
 
@@ -124,9 +152,9 @@ def get_conditions(filters):
 def get_sales_details(filters):
         conditions = get_conditions(filters)
 	
-        return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as del_qty, so.delivery_date, dni.parent as del_note
+        return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, dni.qty as del_qty, dn.posting_date as delivery_date, dni.parent as del_note
                 from `tabDelivery Note Item` dni, `tabDelivery Note` dn, `tabSales Order Item` si, `tabSales Order` so
-                where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status != "Cancelled" and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by si.parent, si.item_code, si.warehouse""" %
+                where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status in ("Completed", "To Bill") and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by si.parent, si.item_code, dn.posting_date, si.warehouse""" %
                 conditions, as_dict=1)
 
 def get_item_map(filters):
@@ -137,6 +165,7 @@ def get_item_map(filters):
         sle = get_sales_details(filters)
 	
         for d in sle:
+                
                 key = (d.sales_order, d.item_code, d.del_note)
                 if key not in iwb_map:
                         iwb_map[key] = frappe._dict({
@@ -150,14 +179,14 @@ def get_item_map(filters):
                 
                 qty_dict.si_qty = d.si_qty
                 qty_dict.del_qty = d.del_qty
+                qty_dict.delivered_qty = d.delivered_qty
                 qty_dict.so_date = d.date
                 qty_dict.del_date = d.delivery_date
                 qty_dict.customer = d.customer
                 if qty_dict.si_qty > qty_dict.del_qty:
-               		qty_dict.pend_qty = qty_dict.si_qty - qty_dict.del_qty
+              		qty_dict.pend_qty = qty_dict.si_qty - qty_dict.del_qty - qty_dict.delivered_qty
 
                
-
         return iwb_map
 
 def get_item_details(filters):
