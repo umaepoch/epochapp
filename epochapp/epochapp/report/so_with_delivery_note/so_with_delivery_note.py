@@ -45,7 +45,7 @@ def execute(filters=None):
  			item_prev = rows[4]
 			tot_si_qty = tot_si_qty + rows[8]
                         tot_del_qty = tot_del_qty + rows[11] 
-			item_pend_qty = rows[8] - rows[12] 
+			item_pend_qty = rows[8] - rows[11] 
 			item_del_qty = rows[11]
 			tot_pend_qty = tot_si_qty - tot_del_qty
 			summ_data.append([order_prev, rows[1], rows[2],
@@ -112,19 +112,19 @@ def get_columns():
         """return columns"""
                
         columns = [
-		_("Sales Order Number")+":Link/Sales Order:150",
-		_("Posting Date")+":Date:150",
-		_("Committed Delivery Date")+":Date:150",
-                _("Customer")+"::150",
-                _("Item")+":Link/Item:100",
+		_("SO Sales Order Number")+":Link/Sales Order:150",
+		_("SO Posting Date")+":Date:150",
+		_("SO Committed Delivery Date")+":Date:150",
+                _("SO Customer")+"::150",
+                _("SO Item")+":Link/Item:100",
 		_("Item Group")+"::100",
 	        _("Description")+"::140",
        	        _("Brand")+":Link/UOM:90",   
-		_("Ordered Qty")+":Float:100",    
-               	_("Delivery Note")+":Link/Delivery Note:100",
-		_("Actual Delivery Date")+":Date:100",
-         	_("Delivered Qty")+":Float:100",
-		_("Balance Qty")+":Float:100"                         
+		_("SO Ordered Qty")+":Float:100",    
+               	_("DN Delivery Note")+":Link/Delivery Note:100",
+		_("DN Actual Delivery Date")+":Date:100",
+         	_("DN Delivered Qty")+":Float:100",
+		_("DN Balance Qty")+":Float:100"                         
 		                         
          ]
 
