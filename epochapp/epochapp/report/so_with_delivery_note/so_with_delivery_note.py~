@@ -34,18 +34,18 @@ def execute(filters=None):
         for (sales_order, item, del_note) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, item, del_note)]
                 data.append([
-                        sales_order, qty_dict.so_date, qty_dict.so_del_date, qty_dict.customer, item, 
+                        sales_order, qty_dict.so_date, qty_dict.so_del_date, qty_dict.del_date, qty_dict.customer, item, 
 			item_map[item]["item_group"], item_map[item]["description"], item_map[item]["brand"],                    
-                        qty_dict.si_qty, del_note, qty_dict.del_date, qty_dict.del_qty, qty_dict.pend_qty
+                        qty_dict.si_qty, del_note, qty_dict.del_qty, qty_dict.pend_qty
                         
                     ])
 	for rows in data: 
        		if order_count == 0: 
        			order_prev = rows[0] 
  			item_prev = rows[4]
-			tot_si_qty = tot_si_qty + rows[8]
+			tot_si_qty = tot_si_qty + rows[9]
                         tot_del_qty = tot_del_qty + rows[11] 
-			item_pend_qty = rows[8] - rows[12] 
+			item_pend_qty = rows[9] - rows[11] 
 			item_del_qty = rows[11]
 			tot_pend_qty = tot_si_qty - tot_del_qty
 			summ_data.append([order_prev, rows[1], rows[2],
@@ -61,15 +61,15 @@ def execute(filters=None):
 				item_del_qty = item_del_qty + rows[11]
 				
                                 if item_prev == item_work:
-					item_pend_qty = rows[8] - item_del_qty
+					item_pend_qty = rows[9] - item_del_qty
 				
 				else:
 					item_prev = item_work
 					item_del_qty = rows[11]
 				
 					item_pend_qty = 0
-					tot_si_qty = tot_si_qty + rows[8]
-					item_pend_qty = rows[8] - item_del_qty		
+					tot_si_qty = tot_si_qty + rows[9]
+					item_pend_qty = rows[9] - item_del_qty		
 				tot_pend_qty = tot_si_qty - tot_del_qty
 				summ_data.append([order_prev, rows[1], rows[2],
 			 	rows[3], rows[4], rows[5], rows[6], 
@@ -77,12 +77,12 @@ def execute(filters=None):
  				]) 
 			else: 
 				summ_data.append([order_prev, " ", 
-			 	" ", " ", " ", " ", " ", " ", tot_si_qty, " ", " ", tot_del_qty, tot_pend_qty
+			 	" ", " ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty
 				
  				])	
 				item_pend_qty = 0
 				item_del_qty = rows[11]			 
-				item_pend_qty = rows[8] - rows[11] - item_pend_qty
+				item_pend_qty = rows[9] - rows[11] - item_pend_qty
 
 				summ_data.append([order_work, rows[1], rows[2],
 			 	rows[3], rows[4], rows[5], rows[6], 
@@ -92,7 +92,7 @@ def execute(filters=None):
 				tot_si_qty = 0
 				tot_del_qty = 0
 				tot_pend_qty = 0
-                                tot_si_qty = tot_si_qty + rows[8]
+                                tot_si_qty = tot_si_qty + rows[9]
                         	tot_del_qty = tot_del_qty + rows[11] 
 				tot_pend_qty = tot_si_qty - tot_del_qty
 				order_prev = order_work 
@@ -100,7 +100,7 @@ def execute(filters=None):
 
 		order_count = order_count + 1 
 	summ_data.append([order_prev, " ", 
-			 	" ", " ", " ", " ", " ", " ", tot_si_qty, " ", " ", tot_del_qty, tot_pend_qty
+			 	" ", " ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty
  				])		 
 		 
 		 
@@ -115,15 +115,15 @@ def get_columns():
 		_("SO Sales Order Number")+":Link/Sales Order:150",
 		_("SO Posting Date")+":Date:150",
 		_("SO Committed Delivery Date")+":Date:150",
-                _("SO Customer")+"::150",
+		_("DN Actual Delivery Date")+":Date:100",                
+		_("SO Customer")+"::150",
                 _("SO Item")+":Link/Item:100",
 		_("Item Group")+"::100",
 	        _("Description")+"::140",
        	        _("Brand")+":Link/UOM:90",   
 		_("SO Ordered Qty")+":Float:100",    
                	_("DN Delivery Note")+":Link/Delivery Note:100",
-		_("DN Actual Delivery Date")+":Date:100",
-         	_("DN Delivered Qty")+":Float:100",
+		_("DN Delivered Qty")+":Float:100",
 		_("DN Balance Qty")+":Float:100"                         
 		                         
          ]
