@@ -120,7 +120,7 @@ def get_columns():
 		_("SO Posting Date")+":Date:150",
 		_("SO Committed Delivery Date")+":Date:150",
 		_("DN Actual Delivery Date")+":Date:100",
-		_("Days Actual - Committed")+":Float:100",
+		_("Days Actual - Committed")+":Int:100",
                 _("SO Customer")+"::150",
                 _("SO Item")+":Link/Item:100",
 		_("Item Group")+"::100",
