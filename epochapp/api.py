@@ -298,3 +298,33 @@ def make_delivery_note(source_name, target_doc=None):
 
 	return target_doc
 
+@frappe.whitelist()
+def make_sales_cycle(source_name, target_doc=None):
+
+	target_doc = get_mapped_doc("Opportunity", source_name, {
+		"Opportunity": {
+			"doctype": "Sales Cycle",
+			"field_map": {
+				"name": "reference_name"
+			}
+		}
+		
+	}, target_doc, set_missing_values)
+
+	return target_doc
+
+
+@frappe.whitelist()
+def set_sales_cycle_values(opportunity):
+
+        
+	max_closing_date = frappe.db.sql("""select max(closing_date) from `tabSales Cycle` where reference_name=%s""",
+				(opportunity))
+				
+        sc_rec = frappe.db.sql("""select value, closing_date 
+		from `tabSales Cycle`
+		where reference_name=%s and closing_date = %s""",
+		(opportunity, max_closing_date))
+        
+                
+        return sc_rec
