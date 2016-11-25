@@ -321,7 +321,7 @@ def set_sales_cycle_values(opportunity):
 	max_closing_date = frappe.db.sql("""select max(closing_date) from `tabSales Cycle` where reference_name=%s""",
 				(opportunity))
 				
-        sc_rec = frappe.db.sql("""select value, closing_date 
+        sc_rec = frappe.db.sql("""select value, closing_date, stage, opportunity_purpose, buying_status, support_needed
 		from `tabSales Cycle`
 		where reference_name=%s and closing_date = %s""",
 		(opportunity, max_closing_date))
