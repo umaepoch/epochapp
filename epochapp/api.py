@@ -325,6 +325,6 @@ def set_sales_cycle_values(opportunity):
 		from `tabSales Cycle`
 		where reference_name=%s and closing_date = %s""",
 		(opportunity, max_closing_date))
-        msgprint(_(sc_rec))
+        
                 
         return sc_rec
