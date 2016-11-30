@@ -159,8 +159,8 @@ def get_sales_details(filters):
 	
         return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, dni.qty as del_qty, dn.posting_date as delivery_date, dni.parent as del_note
                 from `tabDelivery Note Item` dni, `tabDelivery Note` dn, `tabSales Order Item` si, `tabSales Order` so
-                where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status in ("Completed", "To Bill") and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by so.name, si.item_code, dn.posting_date asc, si.warehouse""" %
-                conditions, as_dict=1)
+                where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status in ("Completed", "To Bill") and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by so.name, si.item_code, dn.posting_date asc, si.warehouse""" % conditions, as_dict=1)
+
 
 def get_item_map(filters):
         iwb_map = {}
@@ -168,6 +168,7 @@ def get_item_map(filters):
         to_date = getdate(filters["to_date"])
 	
         sle = get_sales_details(filters)
+
      	
         for d in sle:
                 

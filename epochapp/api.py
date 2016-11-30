@@ -306,7 +306,7 @@ def make_sales_cycle(source_name, target_doc=None):
 			"doctype": "Sales Cycle",
 			"field_map": {
 				"name": "reference_name"
-			}
+			 }
 		}
 		
 	}, target_doc, set_missing_values)
