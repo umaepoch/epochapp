@@ -62,8 +62,7 @@ def execute(filters=None):
                 else: 
 			order_work = rows[0]
                         item_work = rows[5]
-			msgprint(_(temp_date))
-			msgprint(_(rows[3]))
+			
 			if rows[3] == temp_date:
 				diff_days = 0
 			else:
