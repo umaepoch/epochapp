@@ -26,6 +26,7 @@ def update_stock_ledger(doc, allow_negative_stock=False, via_landed_cost_voucher
 						"actual_qty": flt(pr_qty),
                                                 "serial_no": cstr(d.serial_no).strip()
 					})
+					
                                         
 					if doc.is_return:
                                                 
@@ -93,7 +94,9 @@ def make_sl_entries_for_supplier_warehouse(doc, sl_entries):
 					"item_code": d.rm_item_code,
 					"warehouse": doc.supplier_warehouse,
 					"actual_qty": -1*flt(d.consumed_qty),
-                                        "item_tax": d.item_tax_amount
+                                        "item_tax": d.item_tax_amount,
+					"second_uom": d.second_uom,
+					"second_uom_qty": d.second_uom_qty
 				}))
 
 def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False,
@@ -114,12 +117,14 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 				if sle.get("actual_qty") or sle.get("voucher_type")=="Stock Reconciliation":
 		
 					sle_id = make_entry(doc, sle, allow_negative_stock, via_landed_cost_voucher)
-					frappe.db.sql("""update `tabStock Ledger Entry` set item_tax = %s 
-				                        where item_code=%s and voucher_no = %s and warehouse = %s""",
-						(sle['item_tax'], sle['item_code'], sle['voucher_no'], sle['warehouse']))
-                                        
+					
+					frappe.db.sql("""update `tabStock Ledger Entry` set item_tax = %s, second_uom = %s, second_uom_qty = %s
+				                        where item_code=%s and voucher_no = %s and voucher_detail_no = %s and warehouse = %s""",
+						(sle['item_tax'], sle['second_uom'], sle['second_uom_qty'], sle['item_code'], sle['voucher_no'], sle['voucher_detail_no'], sle['warehouse']))
+					              
                                         sle.update(sle)
-                                        
+					msgprint(_("After update"))
+                                        msgprint(_(sle))
                                      				
 				args = sle.copy()
                                 
@@ -149,9 +154,10 @@ def make_entry(doc, sle, allow_negative_stock=False, via_landed_cost_voucher=Fal
 	sle.via_landed_cost_voucher = via_landed_cost_voucher
         
 	
-#     	sle.insert()
- 
+ #    	sle.insert()
+ 	msgprint(_(sle))
 #	sle.submit()
+	msgprint(_(sle.name))
 	return sle.name
 
 def delete_cancelled_entry(voucher_type, voucher_no):
@@ -173,6 +179,7 @@ def get_stock_items(doc):
 
 def get_sl_entries(doc, d, args):
 		from erpnext.accounts.utils import get_fiscal_year
+		
                	sl_dict = frappe._dict({
 			"item_code": d.get("item_code", None),
 			"warehouse": d.get("warehouse", None),
@@ -186,13 +193,15 @@ def get_sl_entries(doc, d, args):
 			"stock_uom": frappe.db.get_value("Item", args.get("item_code") or d.get("item_code"), "stock_uom"),
 			"incoming_rate": 0,
 			"company": doc.company,
-                        "item_tax": d.item_tax_amount,
+                        "item_tax": d.get("item_tax_amount"),
+			"second_uom": d.get("second_uom"),
+			"second_uom_qty": d.get("second_uom_qty"),
 			"batch_no": cstr(d.get("batch_no")).strip(),
 			"serial_no": d.get("serial_no"),
 			"project": d.get("project"),
 			"is_cancelled": doc.docstatus==2 and "Yes" or "No"
 		})
-                
+                msgprint(_(sl_dict))
 		sl_dict.update(args)
 		return sl_dict
 
