@@ -123,8 +123,7 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 						(sle['item_tax'], sle['second_uom'], sle['second_uom_qty'], sle['item_code'], sle['voucher_no'], sle['voucher_detail_no'], sle['warehouse']))
 					              
                                         sle.update(sle)
-					msgprint(_("After update"))
-                                        msgprint(_(sle))
+					
                                      				
 				args = sle.copy()
                                 
@@ -155,9 +154,9 @@ def make_entry(doc, sle, allow_negative_stock=False, via_landed_cost_voucher=Fal
         
 	
  #    	sle.insert()
- 	msgprint(_(sle))
+ 	
 #	sle.submit()
-	msgprint(_(sle.name))
+	
 	return sle.name
 
 def delete_cancelled_entry(voucher_type, voucher_no):
@@ -201,7 +200,7 @@ def get_sl_entries(doc, d, args):
 			"project": d.get("project"),
 			"is_cancelled": doc.docstatus==2 and "Yes" or "No"
 		})
-                msgprint(_(sl_dict))
+
 		sl_dict.update(args)
 		return sl_dict
 
