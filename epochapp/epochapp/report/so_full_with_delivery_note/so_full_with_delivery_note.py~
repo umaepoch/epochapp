@@ -4,7 +4,8 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _, msgprint
-from frappe.utils import flt, getdate
+from frappe.utils import flt, getdate, formatdate
+
 
 def execute(filters=None):
         if not filters: filters = {}
@@ -38,7 +39,7 @@ def execute(filters=None):
                 data.append([
                         sales_order, qty_dict.so_date, qty_dict.so_del_date, delivery_date, qty_dict.customer, item, 
 			item_map[item]["item_group"], item_map[item]["description"], item_map[item]["brand"],                    
-                        qty_dict.si_qty, del_note, qty_dict.del_qty, qty_dict.pend_qty
+                        qty_dict.si_qty, del_note, qty_dict.del_qty, qty_dict.pend_qty, qty_dict.customer_group
                         
                     ])
 	for rows in data: 
@@ -55,20 +56,24 @@ def execute(filters=None):
 				diff_days = 0
 			else:
 				diff_days = rows[3] - rows[2]
-			summ_data.append([order_prev, rows[1], rows[2],
+
+			if diff_days < 0:
+				per_qty = (item_del_qty / tot_si_qty) * 100
+			
+			summ_data.append([rows[13], " ", order_prev, rows[1], rows[2],
 			 	rows[3], diff_days, rows[4], rows[5], rows[6], 
-				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty
+				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
  				]) 
                 else: 
 			order_work = rows[0]
                         item_work = rows[5]
-			msgprint(_(temp_date))
-			msgprint(_(rows[3]))
+			
 			if rows[3] == temp_date:
 				diff_days = 0
 			else:
 				diff_days = rows[3] - rows[2]
 			
+				
 			if order_prev == order_work: 
 				tot_del_qty = tot_del_qty + rows[11]
 				item_del_qty = item_del_qty + rows[11]
@@ -85,22 +90,28 @@ def execute(filters=None):
 					item_pend_qty = rows[9] - item_del_qty	
 				
 				tot_pend_qty = tot_si_qty - tot_del_qty
-				summ_data.append([order_prev, rows[1], rows[2],
+
+				if diff_days < 0:
+					per_qty = (item_del_qty / tot_si_qty) * 100
+
+				summ_data.append([rows[13], " ", order_prev, rows[1], rows[2],
 			 	rows[3], diff_days, rows[4], rows[5], rows[6], 
-				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty,
+				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
  				]) 
 			else: 
-				summ_data.append([order_prev, " ", 
-			 	" ", " ", " ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty
+				summ_data.append([" ", " ", order_prev, " ", 
+			 	" ", " ", " ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty, per_qty
 				
  				])	
 				item_pend_qty = 0
 				item_del_qty = rows[11]		 	 
 				item_pend_qty = rows[9] - rows[11] - item_pend_qty
+				if diff_days < 0:
+					per_qty = (item_del_qty / tot_si_qty) * 100
 
-				summ_data.append([order_work, rows[1], rows[2],
+				summ_data.append([rows[13], " ", order_work, rows[1], rows[2],
 			 	rows[3], diff_days, rows[4], rows[5], rows[6], 
-				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty
+				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
  				]) 
                                 
 				tot_si_qty = 0
@@ -112,9 +123,12 @@ def execute(filters=None):
 				order_prev = order_work 
                                 item_prev = item_work
 
+				if diff_days < 0:
+					per_qty = (item_del_qty / tot_si_qty) * 100
+
 		order_count = order_count + 1 
-	summ_data.append([order_prev, " ", 
-			 	" ", " ", " ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty
+	summ_data.append([" ", " ", order_prev, " ", 
+			 	" ", " ", " ", " ", " ", " ", " ", " ", tot_si_qty, " ", tot_del_qty, tot_pend_qty, per_qty
  				])		 
 	
 		 
@@ -127,6 +141,8 @@ def get_columns():
         """return columns"""
                
         columns = [
+		_("Customer Group")+"::100",
+		_("SO Assigned To")+"::100",
 		_("SO Sales Order Number")+":Link/Sales Order:150",
 		_("SO Posting Date")+":Date:150",
 		_("SO Committed Delivery Date")+":Date:150",
@@ -140,7 +156,8 @@ def get_columns():
 		_("SO Ordered Qty")+":Float:100",    
                	_("DN Delivery Note")+":Link/Delivery Note:100",
 		_("DN Delivered Qty")+":Float:100",
-		_("DN Balance Qty")+":Float:100"   
+		_("DN Balance Qty")+":Float:100",
+		_("% Delivered on time")+":Float:100"   
          ]
 
         return columns
@@ -149,9 +166,11 @@ def get_conditions(filters):
         conditions = ""
         if not filters.get("from_date"):
                 frappe.throw(_("'From Date' is required"))
+	else:
+		conditions += " and so.delivery_date >= '%s'" % frappe.db.escape(filters["from_date"])
 
         if filters.get("to_date"):
-                conditions += " and so.transaction_date <= '%s'" % frappe.db.escape(filters["to_date"])
+                conditions += " and so.delivery_date <= '%s'" % frappe.db.escape(filters["to_date"])
         else:
                 frappe.throw(_("'To Date' is required"))
 
@@ -168,14 +187,14 @@ def get_conditions(filters):
 def get_sales_details(filters):
         conditions = get_conditions(filters)
 	
-        return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, dni.qty as del_qty, dn.posting_date as delivery_date, dni.parent as del_note
+        return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, so.customer_group as customer_group, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, dni.qty as del_qty, dn.posting_date as delivery_date, dni.parent as del_note
                 from `tabDelivery Note Item` dni, `tabDelivery Note` dn, `tabSales Order Item` si, `tabSales Order` so
                 where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status in ("Completed", "To Bill") and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by so.name, si.item_code, dn.posting_date asc, si.warehouse""" % conditions, as_dict=1)
 
 def get_sales_details_wn_dn(filters):
         conditions = get_conditions(filters)
 		
-        return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, 0 as del_qty, date("2001-01-01") as delivery_date, " " as del_note
+        return frappe.db.sql("""select so.name as sales_order, so.transaction_date as date, so.customer, so.customer_group as customer_group, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, 0 as del_qty, date("2001-01-01") as delivery_date, " " as del_note
                 from `tabSales Order Item` si, `tabSales Order` so where so.name = si.parent and so.status != "Cancelled" and not exists (
                 select 1 from `tabDelivery Note Item` dni where dni.against_sales_order = so.name) order by so.name, si.item_code""", as_dict=1)
 
@@ -209,6 +228,8 @@ def get_item_map(filters):
 		qty_dict.so_del_date = d.sodel_date
         #        qty_dict.del_date = d.delivery_date
                 qty_dict.customer = d.customer
+		
+		qty_dict.customer_group = d.customer_group
                 if qty_dict.si_qty > qty_dict.del_qty:
               		qty_dict.pend_qty = qty_dict.si_qty - qty_dict.del_qty - qty_dict.delivered_qty
 
@@ -232,6 +253,7 @@ def get_item_map(filters):
 		qty_dict.so_del_date = d.sodel_date
         #        qty_dict.del_date = d.delivery_date
                 qty_dict.customer = d.customer
+		qty_dict.customer_group = d.customer_group
                 if qty_dict.si_qty > qty_dict.del_qty:
               		qty_dict.pend_qty = qty_dict.si_qty - qty_dict.del_qty - qty_dict.delivered_qty
 

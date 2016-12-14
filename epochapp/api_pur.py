@@ -96,7 +96,8 @@ def make_sl_entries_for_supplier_warehouse(doc, sl_entries):
 					"actual_qty": -1*flt(d.consumed_qty),
                                         "item_tax": d.item_tax_amount,
 					"second_uom": d.second_uom,
-					"second_uom_qty": d.second_uom_qty
+					"second_uom_qty": d.second_uom_qty,
+					"serial_number": d.serial_number
 				}))
 
 def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False,
@@ -104,7 +105,7 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
                 
 		
 		if sl_entries:
-			from erpnext.stock.utils import update_bin
+#			from erpnext.stock.utils import update_bin
 		
 			cancel = True if sl_entries[0].get("is_cancelled") == "Yes" else False
 			if cancel:
@@ -118,9 +119,8 @@ def make_sl_entries(doc, sl_entries, is_amended=None, allow_negative_stock=False
 		
 					sle_id = make_entry(doc, sle, allow_negative_stock, via_landed_cost_voucher)
 					
-					frappe.db.sql("""update `tabStock Ledger Entry` set item_tax = %s, second_uom = %s, second_uom_qty = %s
-				                        where item_code=%s and voucher_no = %s and voucher_detail_no = %s and warehouse = %s""",
-						(sle['item_tax'], sle['second_uom'], sle['second_uom_qty'], sle['item_code'], sle['voucher_no'], sle['voucher_detail_no'], sle['warehouse']))
+					frappe.db.sql("""update `tabStock Ledger Entry` set item_tax = %s, second_uom = %s, second_uom_qty = %s, serial_number = %s where item_code=%s and voucher_no = %s and voucher_detail_no = %s and warehouse = %s""",
+						(sle['item_tax'], sle['second_uom'], sle['second_uom_qty'], sle['serial_number'], sle['item_code'], sle['voucher_no'], sle['voucher_detail_no'], sle['warehouse']))
 					              
                                         sle.update(sle)
 					
@@ -195,6 +195,7 @@ def get_sl_entries(doc, d, args):
                         "item_tax": d.get("item_tax_amount"),
 			"second_uom": d.get("second_uom"),
 			"second_uom_qty": d.get("second_uom_qty"),
+			"serial_number": d.get("serial_number"),
 			"batch_no": cstr(d.get("batch_no")).strip(),
 			"serial_no": d.get("serial_no"),
 			"project": d.get("project"),
@@ -206,10 +207,17 @@ def get_sl_entries(doc, d, args):
 
 
 def update_bin(args, allow_negative_stock=False, via_landed_cost_voucher=False):
+	msgprint(_(args))
+	msgprint(_(args.get("serial_number")))
 	is_stock_item = frappe.db.get_value('Item', args.get("item_code"), 'is_stock_item')
+	msgprint(_("Is Stock Item"))
+	msgprint(_(is_stock_item))
+	from erpnext.stock.utils import get_bin	
 	if is_stock_item:
+		msgprint(_("Inside"))
 		bin = get_bin(args.get("item_code"), args.get("warehouse"))
 		bin.update_stock(args, allow_negative_stock, via_landed_cost_voucher)
+		msgprint(_(bin))
 		return bin
 	else:
 		frappe.msgprint(_("Item {0} ignored since it is not a stock item").format(args.get("item_code")))

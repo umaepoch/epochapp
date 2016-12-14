@@ -7,6 +7,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 
 
+
 def get_tax(purchase_receipt_number,warehouse,item_code):
 	        msgprint(_(warehouse))
 		msgprint(_(purchase_receipt_number))
@@ -93,6 +94,15 @@ def get_item_tax(purchase_receipt_number, warehouse, item_code):
       
         if purchase_receipt_number:
 		return item_tax
+
+@frappe.whitelist()
+def get_purchase_receipts(item_code, warehouse):
+	msgprint("Inside get_purchase_receipts")
+	po_numbers = []
+  	po_numbers = frappe.db.sql("""select voucher_no from `tabStock Ledger Entry` where voucher_type = 'Purchase Receipt' and item_code = %s and warehouse = %s""", (item_code, warehouse))
+      
+	msgprint(_(po_numbers))
+        return po_numbers
 
 
 @frappe.whitelist()
@@ -328,3 +338,17 @@ def set_sales_cycle_values(opportunity):
         
                 
         return sc_rec
+
+@frappe.whitelist()
+def get_serial_number(item, second_uom, second_uom_qty):
+
+        
+	last_serial_number = frappe.db.sql("""select max(sno) from `tabSerial Number`""")[0][0]
+	
+	next_serial_number = last_serial_number + 1
+
+	frappe.db.sql("""update `tabSerial Number` set sno = %s, item = %s, second_uom = %s, second_uom_qty = %s""", (next_serial_number, item, second_uom, second_uom_qty))	           
+	
+        return next_serial_number
+
+
