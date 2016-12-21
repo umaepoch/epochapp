@@ -31,8 +31,9 @@ def execute(filters=None):
 	tot_pend_qty = 0
 	item_pend_qty = 0
 	item_del_qty = 0
-	temp_date = getdate("0001-01-01")
+	temp_date = getdate("2001-01-01")
 	diff_days = 0
+	per_qty = 0
 
         for (sales_order, item, delivery_date, del_note) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, item, delivery_date, del_note)]
@@ -58,9 +59,12 @@ def execute(filters=None):
 			else:
 				diff_days = rows[3] - rows[2]
 
-			if diff_days < 0:
+			if flt(diff_days) <= 0 and rows[3] != temp_date:
+				msgprint(_("Inside 1"))
+				msgprint(_(item_del_qty))
+				msgprint(_(tot_si_qty))
 				per_qty = (item_del_qty / tot_si_qty) * 100
-			
+				msgprint(_(per_qty))
 			summ_data.append([rows[13], " ", order_prev, rows[1], rows[2],
 			 	rows[3], diff_days, rows[4], rows[5], rows[6], 
 				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
@@ -87,14 +91,18 @@ def execute(filters=None):
 					item_prev = item_work
 					item_del_qty = rows[11]
 					item_pend_qty = 0
+					per_qty = 0
 					tot_si_qty = tot_si_qty + rows[9]
 					item_pend_qty = rows[9] - item_del_qty	
 				
 				tot_pend_qty = tot_si_qty - tot_del_qty
 
-				if diff_days < 0:
-					per_qty = (item_del_qty / tot_si_qty) * 100
-
+				if flt(diff_days) <= 0 and rows[3] != temp_date:
+					msgprint(_("Inside 2"))
+					msgprint(_(item_del_qty))
+					msgprint(_(rows[9]))
+					per_qty = (item_del_qty / rows[9]) * 100
+					msgprint(_(per_qty))
 				summ_data.append([rows[13], " ", order_prev, rows[1], rows[2],
 			 	rows[3], diff_days, rows[4], rows[5], rows[6], 
 				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
@@ -105,27 +113,37 @@ def execute(filters=None):
 				
  				])	
 				item_pend_qty = 0
+				tot_si_qty = 0
+				tot_del_qty = 0
+				tot_pend_qty = 0
+				per_qty = 0
+                                tot_si_qty = tot_si_qty + rows[9]
+                        	tot_del_qty = tot_del_qty + rows[11] 
+				tot_pend_qty = tot_si_qty - tot_del_qty
 				item_del_qty = rows[11]		 	 
 				item_pend_qty = rows[9] - rows[11] - item_pend_qty
-				if diff_days < 0:
+				if flt(diff_days) <= 0 and rows[3] != temp_date:
+					msgprint(_("Inside 3"))
+					msgprint(_(item_del_qty))
+					msgprint(_(tot_si_qty))					
 					per_qty = (item_del_qty / tot_si_qty) * 100
+					msgprint(_(per_qty))
 
 				summ_data.append([rows[13], " ", order_work, rows[1], rows[2],
 			 	rows[3], diff_days, rows[4], rows[5], rows[6], 
 				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
  				]) 
                                 
-				tot_si_qty = 0
-				tot_del_qty = 0
-				tot_pend_qty = 0
-                                tot_si_qty = tot_si_qty + rows[9]
-                        	tot_del_qty = tot_del_qty + rows[11] 
-				tot_pend_qty = tot_si_qty - tot_del_qty
+				
 				order_prev = order_work 
                                 item_prev = item_work
 
-				if diff_days < 0:
+				if flt(diff_days) <= 0 and rows[3] != temp_date:
+					msgprint(_("Inside 4"))	
+					msgprint(_(item_del_qty))
+					msgprint(_(tot_si_qty))
 					per_qty = (item_del_qty / tot_si_qty) * 100
+					msgprint(_(per_qty))
 
 		order_count = order_count + 1 
 	summ_data.append([" ", " ", order_prev, " ", 

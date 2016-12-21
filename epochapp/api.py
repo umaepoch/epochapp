@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
 import frappe
+import json
+import frappe.utils
 from frappe.utils import cint, flt, cstr, comma_or, getdate
 from erpnext.setup.utils import get_company_currency
 from frappe import _, throw, msgprint
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
-
+from frappe.desk.notifications import clear_doctype_notifications
 
 
 def get_tax(purchase_receipt_number,warehouse,item_code):
@@ -99,9 +101,11 @@ def get_item_tax(purchase_receipt_number, warehouse, item_code):
 def get_purchase_receipts(item_code, warehouse):
 	msgprint("Inside get_purchase_receipts")
 	po_numbers = []
-  	po_numbers = frappe.db.sql("""select voucher_no from `tabStock Ledger Entry` where voucher_type = 'Purchase Receipt' and item_code = %s and warehouse = %s""", (item_code, warehouse))
+	target_po_no = []
+  	po_numbers = frappe.db.sql("""select voucher_no, item_tax from `tabStock Ledger Entry` where voucher_type = 'Purchase Receipt' and item_code = %s and warehouse = %s""", (item_code, warehouse))
       
 	msgprint(_(po_numbers))
+	
         return po_numbers
 
 
