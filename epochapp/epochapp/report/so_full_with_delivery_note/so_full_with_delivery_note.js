@@ -3,8 +3,14 @@
 
 frappe.query_reports["SO Full with Delivery Note"] = {
 	"filters": [
-
-	    {
+		
+		{
+                        "fieldname":"assigned_to",
+                        "label": __("Assigned To"),
+                        "fieldtype": "Data",
+                        "reqd": 0
+                },
+	        {
                         "fieldname":"name",
                         "label": __("Sales Order"),
                         "fieldtype": "Link",
@@ -15,15 +21,15 @@ frappe.query_reports["SO Full with Delivery Note"] = {
                 {      "fieldname":"from_date",
                         "label": __("From Date"),
                         "fieldtype": "Date",
-                        "width": "80",
-                        "default": sys_defaults.year_start_date,
+                        "width": "80"
+    //                    "default": sys_defaults.year_start_date,
                 },
                 {
                         "fieldname":"to_date",
                         "label": __("To Date"),
                         "fieldtype": "Date",
-                        "width": "80",
-                        "default": frappe.datetime.get_today()
+                        "width": "80"
+     //                   "default": frappe.datetime.get_today()
                 },
                 {
                         "fieldname":"warehouse",
@@ -36,7 +42,20 @@ frappe.query_reports["SO Full with Delivery Note"] = {
                         "label": __("Item"),
                         "fieldtype": "Link",
                         "options": "Item"
-                }
+                },
+		{
+                        "fieldname":"brand",
+                        "label": __("Brand"),
+                        "fieldtype": "Link",
+                        "options": "Brand"
+                },
+		{
+                        "fieldname":"item_group",
+                        "label": __("Item Group"),
+                        "fieldtype": "Link",
+                        "options": "Item Group"
+                },
+		
                                   
                 
         ]
