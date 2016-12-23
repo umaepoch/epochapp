@@ -232,24 +232,22 @@ def get_sales_details(filters):
                 from `tabDelivery Note Item` dni, `tabDelivery Note` dn, `tabSales Order Item` si, `tabSales Order` so
                 where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status in ("Completed", "To Bill") and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by so.name, si.item_code, dn.posting_date asc, si.warehouse""" % conditions, as_dict=1)
 
+
 def get_sales_details_wn_dn(filters):
         conditions = get_conditions(filters)
 
-#	if not (conditions):	
 	return frappe.db.sql("""select so.name as sales_order, so.assigned_to, so.transaction_date as date, so.customer, so.customer_group as customer_group, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, si.amount, 0 as del_qty, date("2001-01-01") as delivery_date, 0 as total, " " as del_note
                 from `tabSales Order Item` si, `tabSales Order` so where so.name = si.parent and so.status != "Cancelled" %s and not exists (
                 select 1 from `tabDelivery Note Item` dni where dni.against_sales_order = so.name) order by so.name, si.item_code""" % conditions, as_dict=1)
 
+
 def get_sales_details_dn_draft(filters):
         conditions = get_conditions(filters)
 
-#	if not (conditions):	
 	return frappe.db.sql("""select so.name as sales_order, so.assigned_to, so.transaction_date as date, so.customer, so.customer_group as customer_group, so.delivery_date as sodel_date, si.item_code, si.warehouse, si.qty as si_qty, si.delivered_qty as delivered_qty, si.amount, 0 as del_qty, date("2001-01-01") as delivery_date, 0 as total, " " as del_note
                  from `tabDelivery Note Item` dni, `tabDelivery Note` dn, `tabSales Order Item` si, `tabSales Order` so
                 where dni.item_code = si.item_code and so.status != "Cancelled" and dn.status in ("Draft", "Cancelled", "Closed") and so.name = si.parent and dn.name = dni.parent and dni.against_sales_order = so.name %s order by so.name, si.item_code, dn.posting_date asc, si.warehouse""" % conditions, as_dict=1)
 
-#	else:
-#		return
 
 def get_item_map(filters):
         iwb_map = {}
@@ -260,7 +258,6 @@ def get_item_map(filters):
         
 	dle = get_sales_details_wn_dn(filters)
    	kle = get_sales_details_dn_draft(filters)
-	msgprint(_(kle))
              	
         for d in sle:
                 
