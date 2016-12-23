@@ -37,6 +37,11 @@ def execute(filters=None):
 	full_tot_del_amt = 0
 	full_tot_si_amt = 0
 	tot_per_amt = 0
+	cust_group_prev = " "
+	customer_prev = " "
+	assigned_to_prev = " "
+	posting_date_prev = getdate("2001-01-01")
+	del_date_prev = getdate("2001-01-01")
 
         for (sales_order, item, delivery_date, del_note) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, item, delivery_date, del_note)]

@@ -37,6 +37,11 @@ def execute(filters=None):
 	full_tot_del_amt = 0
 	full_tot_si_amt = 0
 	tot_per_amt = 0
+	cust_group_prev = " "
+	customer_prev = " "
+	assigned_to_prev = " "
+	posting_date_prev = getdate("2001-01-01")
+	del_date_prev = getdate("2001-01-01")
 
         for (sales_order, item, delivery_date, del_note) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, item, delivery_date, del_note)]
@@ -124,8 +129,8 @@ def execute(filters=None):
 #				rows[7], rows[8], rows[9], rows[10], rows[11], item_pend_qty, per_qty
  #				]) 
 			else: 
-				summ_data.append([cust_group_prev, assigned_to_prev, order_prev, " ", 
-			 	" ", customer_prev, tot_si_qty, tot_del_qty, tot_pend_qty, per_qty
+				summ_data.append([cust_group_prev, assigned_to_prev, order_prev, posting_date_prev, 
+			 	del_date_prev, customer_prev, tot_si_qty, tot_del_qty, tot_pend_qty, per_qty
 				
  				])	
 				item_pend_qty = 0
@@ -170,8 +175,8 @@ def execute(filters=None):
 	else:
 		tot_per_amt = 0
 
-	summ_data.append([cust_group_prev, assigned_to_prev, order_prev, posting_date_work, 
-			 	del_date_work, customer_prev, tot_si_qty, tot_del_qty, tot_pend_qty, per_qty
+	summ_data.append([cust_group_prev, assigned_to_prev, order_prev, posting_date_prev, 
+			 	del_date_prev, customer_prev, tot_si_qty, tot_del_qty, tot_pend_qty, per_qty
  				])		 
 	
 	summ_data.append([" ", " ", " ", " ", "Total Value and Percentage ", " ", full_tot_si_amt, full_tot_del_amt, 0, tot_per_amt
