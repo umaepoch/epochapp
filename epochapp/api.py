@@ -355,4 +355,60 @@ def get_serial_number(item, second_uom, second_uom_qty):
 	
         return next_serial_number
 
+@frappe.whitelist()
+def get_items(self):
+	msgprint("Inside api 2")	
+#	self.set('items', [])
+		
+	self.validate_production_order()
+
+	if not self.posting_date or not self.posting_time:
+		frappe.throw(_("Posting date and posting time is mandatory"))
+
+	self.set_production_order_details()
+
+	if self.bom_no:
+		if self.purpose in ["Material Issue", "Material Transfer", "Manufacture", "Repack",
+			"Subcontract", "Material Transfer for Manufacture"]:
+			if self.production_order and self.purpose == "Material Transfer for Manufacture":
+				item_dict = self.get_pending_raw_materials()
+				if self.to_warehouse and self.pro_doc:
+					for item in item_dict.values():
+						item["to_warehouse"] = self.pro_doc.wip_warehouse
+				self.add_to_stock_entry_detail(item_dict)
+
+			elif self.production_order and self.purpose == "Manufacture" and \
+				frappe.db.get_single_value("Manufacturing Settings", "backflush_raw_materials_based_on")== "Material Transferred for Manufacture":
+				self.get_transfered_raw_materials()
+
+			else:
+				if not self.fg_completed_qty:
+					frappe.throw(_("Manufacturing Quantity is mandatory"))
+					item_dict = self.get_bom_raw_materials(self.fg_completed_qty)
+					for item in item_dict.values():
+						if self.pro_doc:
+							item["from_warehouse"] = self.pro_doc.wip_warehouse
+
+						item["to_warehouse"] = self.to_warehouse if self.purpose=="Subcontract" else ""
+
+					self.add_to_stock_entry_detail(item_dict)
+
+					scrap_item_dict = self.get_bom_scrap_material(self.fg_completed_qty)
+					for item in scrap_item_dict.values():
+						if self.pro_doc and self.pro_doc.scrap_warehouse:
+							item["to_warehouse"] = self.pro_doc.scrap_warehouse
+					self.add_to_stock_entry_detail(scrap_item_dict, bom_no=self.bom_no)
+
+		# fetch the serial_no of the first stock entry for the second stock entry
+		if self.production_order and self.purpose == "Manufacture":
+			self.set_serial_nos(self.production_order)
+
+		# add finished goods item
+		if self.purpose in ("Manufacture", "Repack"):
+			self.load_items_from_bom()
+
+	self.set_actual_qty()
+	self.calculate_rate_and_amount()
+
+
 
