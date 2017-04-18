@@ -65,7 +65,7 @@ def execute(filters=None):
 
 				summ_data.append([so_prev, " ", " ", " ", " ", " ", 
 			 	" ", " ", " ", tot_bi_qty,
-				tot_bal_qty, " ", " ", " ", " ", " "
+				tot_bal_qty, " ", " ", " ", " "
  				])				 
 
 				summ_data.append([so_work,rows[1], rows[2],
@@ -109,6 +109,7 @@ def get_columns():
                 _("Balance Qty")+":Float:100",
                 _("Warehouse")+"::100",
                 _("Purchase Order")+":Link/Purchase Order:100",
+		_("Purchase Order Item")+"::100",
 		_("Delivery Date")+"::100"
 
 
