@@ -149,12 +149,12 @@ def get_sales_order_entries(filters):
 
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, po.due_date as delivery_date
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.expected_delivery_date as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Explosion Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` as pi where bo.name = bi.parent and so.name = si.parent and si.item_code = bo.item and so.status != "Cancelled" and si.delivered_qty < si.qty and pi.item_code = bo.item and po.name = pi.parent %s
                 	order by so.name, si.item_code, bo.name, bi.item_code""" % conditions, as_dict=1)
 	else:
 
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, po.due_date as delivery_date
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.expected_delivery_date as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` as pi where bo.name = bi.parent and so.name = si.parent and si.item_code = bo.item and so.status != "Cancelled" and si.delivered_qty < si.qty and pi.item_code = bo.item and po.name = pi.parent %s
                 	order by so.name, si.item_code, bo.name, bi.item_code""" % conditions, as_dict=1)
 
