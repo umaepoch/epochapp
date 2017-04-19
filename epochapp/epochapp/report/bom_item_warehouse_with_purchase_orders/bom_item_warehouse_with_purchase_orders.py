@@ -165,14 +165,16 @@ def get_sales_order_entries_2(filters):
 
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty
-                	from `tabSales Order` so, `tabSales Order Item` si where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code 
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+                	from `tabSales Order` so, `tabSales Order Item` si
+                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code 
                 	order by so.name, si.item_code)""" % conditions, as_dict=1)
 
 	else:
 
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty
-                	from `tabSales Order` so, `tabSales Order Item` si where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code 
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+                	from `tabSales Order` so, `tabSales Order Item` si
+                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code 
                 	order by so.name, si.item_code)""" % conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
@@ -181,8 +183,8 @@ def get_item_warehouse_map(filters):
         to_date = getdate(filters["to_date"])
 
         sle = get_sales_order_entries(filters)
-#	dle = get_sales_order_entries_2(filters)
-	dle = []
+	dle = get_sales_order_entries_2(filters)
+#	dle = []
 	company = filters.get("company")
 	total_stock = 0
 	if filters.get("warehouse"):
@@ -302,6 +304,9 @@ def get_item_warehouse_map(filters):
         		        qty_dict.bi_qty = d.bi_qty
 				qty_dict.si_qty = d.si_qty
 				qty_dict.bi_item = d.bi_item
+				qty_dict.purchase_order = d.purchase_order
+				qty_dict.delivery_date = d.delivery_date
+				qty_dict.pi_item = d.pi_item
 
 			else:
 
@@ -333,6 +338,9 @@ def get_item_warehouse_map(filters):
         				        	qty_dict.bi_qty = d.bi_qty
 							qty_dict.si_qty = d.si_qty
 							qty_dict.bi_item = d.bi_item
+							qty_dict.purchase_order = d.purchase_order
+							qty_dict.delivery_date = d.delivery_date
+							qty_dict.pi_item = d.pi_item
 			
 				else:
 
@@ -356,6 +364,9 @@ def get_item_warehouse_map(filters):
         			        qty_dict.bi_qty = d.bi_qty
 					qty_dict.si_qty = d.si_qty
 					qty_dict.bi_item = d.bi_item
+					qty_dict.purchase_order = d.purchase_order
+					qty_dict.delivery_date = d.delivery_date
+					qty_dict.pi_item = d.pi_item
 				
 	return iwb_map
 
