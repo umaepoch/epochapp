@@ -187,7 +187,7 @@ def get_sales_order_entries_4(filters):
 
 	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabPurchase Order` po, `tabPurchase Order Item` pi
-                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and pi.item_code = bo.item and po.name = pi.parent and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code)""" % conditions, as_dict=1)
+                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and pi.item_code = si.item_code and po.name = pi.parent and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code)""" % conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
         iwb_map = {}
