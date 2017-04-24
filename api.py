@@ -192,60 +192,60 @@ def set_item_tax(batch_no, item_code, tax_amount):
         return
 
 @frappe.whitelist()
-def get_items(self):
-	msgprint("Inside api 1")
-		
+def get_items(doc):
+	msgprint(_("Inside api 2"))
 #	self.set('items', [])
 		
-	self.validate_production_order()
+	doc.validate_production_order()
 
-	if not self.posting_date or not self.posting_time:
+	if not doc.posting_date or not doc.posting_time:
 		frappe.throw(_("Posting date and posting time is mandatory"))
 
-	self.set_production_order_details()
+	doc.set_production_order_details()
 
-	if self.bom_no:
-		if self.purpose in ["Material Issue", "Material Transfer", "Manufacture", "Repack",
+	if doc.bom_no:
+		if doc.purpose in ["Material Issue", "Material Transfer", "Manufacture", "Repack",
 			"Subcontract", "Material Transfer for Manufacture"]:
-			if self.production_order and self.purpose == "Material Transfer for Manufacture":
-				item_dict = self.get_pending_raw_materials()
-				if self.to_warehouse and self.pro_doc:
+			if doc.production_order and doc.purpose == "Material Transfer for Manufacture":
+				item_dict = doc.get_pending_raw_materials()
+				if doc.to_warehouse and doc.pro_doc:
 					for item in item_dict.values():
-						item["to_warehouse"] = self.pro_doc.wip_warehouse
-				self.add_to_stock_entry_detail(item_dict)
+						item["to_warehouse"] = doc.pro_doc.wip_warehouse
+				doc.add_to_stock_entry_detail(item_dict)
 
-			elif self.production_order and self.purpose == "Manufacture" and \
+			elif doc.production_order and doc.purpose == "Manufacture" and \
 				frappe.db.get_single_value("Manufacturing Settings", "backflush_raw_materials_based_on")== "Material Transferred for Manufacture":
-				self.get_transfered_raw_materials()
+				doc.get_transfered_raw_materials()
 
 			else:
-				if not self.fg_completed_qty:
+				if not doc.fg_completed_qty:
 					frappe.throw(_("Manufacturing Quantity is mandatory"))
-					item_dict = self.get_bom_raw_materials(self.fg_completed_qty)
+					item_dict = doc.get_bom_raw_materials(doc.fg_completed_qty)
 					for item in item_dict.values():
-						if self.pro_doc:
-							item["from_warehouse"] = self.pro_doc.wip_warehouse
+						if doc.pro_doc:
+							item["from_warehouse"] = doc.pro_doc.wip_warehouse
 
-						item["to_warehouse"] = self.to_warehouse if self.purpose=="Subcontract" else ""
+						item["to_warehouse"] = doc.to_warehouse if doc.purpose=="Subcontract" else ""
 
-					self.add_to_stock_entry_detail(item_dict)
+					doc.add_to_stock_entry_detail(item_dict)
 
-					scrap_item_dict = self.get_bom_scrap_material(self.fg_completed_qty)
+					scrap_item_dict = doc.get_bom_scrap_material(doc.fg_completed_qty)
 					for item in scrap_item_dict.values():
-						if self.pro_doc and self.pro_doc.scrap_warehouse:
-							item["to_warehouse"] = self.pro_doc.scrap_warehouse
-					self.add_to_stock_entry_detail(scrap_item_dict, bom_no=self.bom_no)
+						if doc.pro_doc and doc.pro_doc.scrap_warehouse:
+							item["to_warehouse"] = doc.pro_doc.scrap_warehouse
+					doc.add_to_stock_entry_detail(scrap_item_dict, bom_no=doc.bom_no)
 
 		# fetch the serial_no of the first stock entry for the second stock entry
-		if self.production_order and self.purpose == "Manufacture":
-			self.set_serial_nos(self.production_order)
+		if doc.production_order and doc.purpose == "Manufacture":
+			doc.set_serial_nos(doc.production_order)
 
 		# add finished goods item
-		if self.purpose in ("Manufacture", "Repack"):
-			self.load_items_from_bom()
+		if doc.purpose in ("Manufacture", "Repack"):
+			doc.load_items_from_bom()
 
-	self.set_actual_qty()
-	self.calculate_rate_and_amount()
+	doc.set_actual_qty()
+	doc.calculate_rate_and_amount()
+
 
 
 
