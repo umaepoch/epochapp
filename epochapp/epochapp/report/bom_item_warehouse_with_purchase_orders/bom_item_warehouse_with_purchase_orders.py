@@ -98,7 +98,7 @@ def get_columns():
 		_("Sales Order")+":Link/Sales Order:100",
 		_("Sales Order Item")+":Link/Item:100",
 		_("SO Qty")+":Float:100",
-		_("Project")+::100",
+		_("Project")+"::100",
 		_("BOM")+":Link/BOM:100",
                 _("Item")+":Link/Item:100",
                 _("Description")+"::140",
