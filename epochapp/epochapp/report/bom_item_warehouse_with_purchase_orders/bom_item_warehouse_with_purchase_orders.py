@@ -28,7 +28,7 @@ def execute(filters=None):
 	for (sales_order, bom, item, bi_item, whse) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, bom, item, bi_item, whse)]
                 data.append([
-                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[item]["description"],
+                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[bi_item]["description"],
                         item_map[item]["item_group"],
                         item_map[item]["item_name"], 
                         item_map[item]["stock_uom"], 
