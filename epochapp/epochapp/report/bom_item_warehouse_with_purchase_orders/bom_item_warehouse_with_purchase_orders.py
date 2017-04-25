@@ -33,7 +33,7 @@ def execute(filters=None):
                         item_map[item]["item_name"], 
                         item_map[item]["stock_uom"], 
                         qty_dict.bal_qty, qty_dict.bi_qty, whse,                                              
-                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date
+                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project
                     ])
 
        		
@@ -45,7 +45,7 @@ def execute(filters=None):
 
 	                tot_bal_qty = tot_bal_qty + rows[9] 
 			tot_bi_qty = tot_bi_qty + rows[10]
-                        summ_data.append([so_prev, rows[1], rows[2],
+                        summ_data.append([so_prev, rows[1], rows[2], rows[15],
 		 	rows[3], rows[4], rows[5], rows[6], rows[7], rows[8], rows[10],
 			rows[9], rows[11], rows[12], rows[13], rows[14]
  			]) 
@@ -57,18 +57,18 @@ def execute(filters=None):
 				tot_bal_qty = tot_bal_qty + rows[9] 
 				
 				tot_bi_qty = tot_bi_qty + rows[10]
-        	                summ_data.append([so_prev, rows[1], rows[2],
+        	                summ_data.append([so_prev, rows[1], rows[2], rows[15],
 		 	rows[3], rows[4], rows[5], rows[6], rows[7], rows[8], rows[10],
 			rows[9], rows[11], rows[12], rows[13], rows[14]			 
  				]) 
 			else: 
 
-				summ_data.append([so_prev, " ", " ", " ", " ", " ", 
+				summ_data.append([so_prev, " ", " ", " ", " ", " ", " ",
 			 	" ", " ", " ", tot_bi_qty,
 				tot_bal_qty, " ", " ", " ", " "
  				])				 
 
-				summ_data.append([so_work,rows[1], rows[2],
+				summ_data.append([so_work,rows[1], rows[2], rows[15],
 		 	rows[3], rows[4], rows[5], rows[6], rows[7], rows[8], rows[10],
 			rows[9], rows[11], rows[12], rows[13], rows[14]
  				]) 
@@ -82,7 +82,7 @@ def execute(filters=None):
 				so_prev = so_work 
                                
 		so_count = so_count + 1 
-	summ_data.append([so_prev, " ", " ", " ", " ", " ",
+	summ_data.append([so_prev, " ", " ", " ", " ", " ", " ",
 		" ", " ", " ", tot_bi_qty,
 		tot_bal_qty, " ", " ", " ",  " "
  		])	 
@@ -98,6 +98,7 @@ def get_columns():
 		_("Sales Order")+":Link/Sales Order:100",
 		_("Sales Order Item")+":Link/Item:100",
 		_("SO Qty")+":Float:100",
+		_("Project")+::100",
 		_("BOM")+":Link/BOM:100",
                 _("Item")+":Link/Item:100",
                 _("Description")+"::140",
@@ -150,12 +151,12 @@ def get_sales_order_entries(filters):
 
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Explosion Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` pi where bo.name = bi.parent and so.name = si.parent and si.item_code = bo.item and so.status != "Cancelled" and si.delivered_qty < si.qty and pi.item_code = bi.item_code and po.name = pi.parent %s
                 	order by so.name, si.item_code, bo.name, bi.item_code""" % conditions, as_dict=1)
 	else:
 
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` as pi where bo.name = bi.parent and so.name = si.parent and si.item_code = bo.item and so.status != "Cancelled" and si.delivered_qty < si.qty and pi.item_code = bi.item_code and po.name = pi.parent %s
                 	order by so.name, si.item_code, bo.name, bi.item_code""" % conditions, as_dict=1)
 
@@ -163,7 +164,7 @@ def get_sales_order_entries(filters):
 def get_sales_order_entries_2(filters):
 	conditions = get_conditions(filters)
 
-	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as project, " " as bi_item, 0 as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si
                 	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code) and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = si.item_code)""" % conditions, as_dict=1)
 
@@ -172,20 +173,20 @@ def get_sales_order_entries_3(filters):
 
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name as name, bo.company as company, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name as name, bo.company as company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Explosion Item` bi
                 	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty and bo.item = si.item_code and bo.name = bi.parent %s and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = bi.item_code)""" % conditions, as_dict=1)
 
 	else:
 
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name as name, bo.company as company, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name as name, bo.company as company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Item` bi
                 	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty and bo.item = si.item_code and bo.name = bi.parent %s and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = bi.item_code)""" % conditions, as_dict=1)
 
 def get_sales_order_entries_4(filters):
 	conditions = get_conditions(filters)
 
-	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as bi_item, 0 as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
+	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as project, " " as bi_item, 0 as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
                 	from `tabSales Order` so, `tabSales Order Item` si, `tabPurchase Order` po, `tabPurchase Order Item` pi
                 	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and pi.item_code = si.item_code and po.name = pi.parent and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code)""" % conditions, as_dict=1)
 
@@ -228,6 +229,7 @@ def get_item_warehouse_map(filters):
         	        qty_dict.bi_qty = d.bi_qty
 			qty_dict.si_qty = d.si_qty
 			qty_dict.purchase_order = d.purchase_order
+			qty_dict.project = d.project
 			qty_dict.delivery_date = d.delivery_date
 			qty_dict.pi_item = d.pi_item
 
@@ -261,6 +263,7 @@ def get_item_warehouse_map(filters):
         			        	qty_dict.bi_qty = d.bi_qty
 						qty_dict.si_qty = d.si_qty
 						qty_dict.purchase_order = d.purchase_order
+						qty_dict.project = d.project
 						qty_dict.delivery_date = d.delivery_date
 						qty_dict.pi_item = d.pi_item
 
@@ -287,6 +290,7 @@ def get_item_warehouse_map(filters):
         		        qty_dict.bi_qty = d.bi_qty
 				qty_dict.si_qty = d.si_qty
 				qty_dict.purchase_order = d.purchase_order
+				qty_dict.project = d.project
 				qty_dict.delivery_date = d.delivery_date
 				qty_dict.pi_item = d.pi_item
 
@@ -314,6 +318,7 @@ def get_item_warehouse_map(filters):
         		        qty_dict.bi_qty = d.bi_qty
 				qty_dict.si_qty = d.si_qty
 				qty_dict.purchase_order = d.purchase_order
+				qty_dict.project = d.project
 				qty_dict.delivery_date = d.delivery_date
 				qty_dict.pi_item = d.pi_item
 
@@ -347,6 +352,7 @@ def get_item_warehouse_map(filters):
         				        	qty_dict.bi_qty = d.bi_qty
 							qty_dict.si_qty = d.si_qty
 							qty_dict.purchase_order = d.purchase_order
+							qty_dict.project = d.project
 							qty_dict.delivery_date = d.delivery_date
 							qty_dict.pi_item = d.pi_item
 			
@@ -372,6 +378,7 @@ def get_item_warehouse_map(filters):
         			        qty_dict.bi_qty = d.bi_qty
 					qty_dict.si_qty = d.si_qty
 					qty_dict.purchase_order = d.purchase_order
+					qty_dict.project = d.project
 					qty_dict.delivery_date = d.delivery_date
 					qty_dict.pi_item = d.pi_item
 
@@ -398,6 +405,7 @@ def get_item_warehouse_map(filters):
         		        qty_dict.bi_qty = d.bi_qty
 				qty_dict.si_qty = d.si_qty
 				qty_dict.purchase_order = d.purchase_order
+				qty_dict.project = d.project
 				qty_dict.delivery_date = d.delivery_date
 				qty_dict.pi_item = d.pi_item
 
@@ -431,6 +439,7 @@ def get_item_warehouse_map(filters):
         				        	qty_dict.bi_qty = d.bi_qty
 							qty_dict.si_qty = d.si_qty
 							qty_dict.purchase_order = d.purchase_order
+							qty_dict.project = d.project
 							qty_dict.delivery_date = d.delivery_date
 							qty_dict.pi_item = d.pi_item
 			
@@ -456,6 +465,7 @@ def get_item_warehouse_map(filters):
         			        qty_dict.bi_qty = d.bi_qty
 					qty_dict.si_qty = d.si_qty
 					qty_dict.purchase_order = d.purchase_order
+					qty_dict.project = d.project
 					qty_dict.delivery_date = d.delivery_date
 					qty_dict.pi_item = d.pi_item
 
@@ -482,6 +492,7 @@ def get_item_warehouse_map(filters):
         		        qty_dict.bi_qty = d.bi_qty
 				qty_dict.si_qty = d.si_qty
 				qty_dict.purchase_order = d.purchase_order
+				qty_dict.project = d.project
 				qty_dict.delivery_date = d.delivery_date
 				qty_dict.pi_item = d.pi_item
 
@@ -515,6 +526,7 @@ def get_item_warehouse_map(filters):
         				        	qty_dict.bi_qty = d.bi_qty
 							qty_dict.si_qty = d.si_qty
 							qty_dict.purchase_order = d.purchase_order
+							qty_dict.project = d.project
 							qty_dict.delivery_date = d.delivery_date
 							qty_dict.pi_item = d.pi_item
 			
@@ -540,6 +552,7 @@ def get_item_warehouse_map(filters):
         			        qty_dict.bi_qty = d.bi_qty
 					qty_dict.si_qty = d.si_qty
 					qty_dict.purchase_order = d.purchase_order
+					qty_dict.project = d.project
 					qty_dict.delivery_date = d.delivery_date
 					qty_dict.pi_item = d.pi_item
 
