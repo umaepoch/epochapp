@@ -27,14 +27,26 @@ def execute(filters=None):
         
 	for (sales_order, bom, item, bi_item, whse) in sorted(iwb_map):
                 qty_dict = iwb_map[(sales_order, bom, item, bi_item, whse)]
-                data.append([
-                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[bi_item]["description"],
-                        item_map[item]["item_group"],
-                        item_map[item]["item_name"], 
-                        item_map[item]["stock_uom"], 
-                        qty_dict.bal_qty, qty_dict.bi_qty, whse,                                              
-                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project
-                    ])
+		if bi_item != " ":
+			
+	                data.append([
+	                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[bi_item]["description"],
+	                        item_map[item]["item_group"],
+	                        item_map[item]["item_name"], 
+	                        item_map[item]["stock_uom"], 
+	                        qty_dict.bal_qty, qty_dict.bi_qty, whse,                                              
+	                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project
+	                    ])
+		else:
+
+			data.append([
+	                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[item]["description"],
+	                        item_map[item]["item_group"],
+	                        item_map[item]["item_name"], 
+	                        item_map[item]["stock_uom"], 
+	                        qty_dict.bal_qty, qty_dict.bi_qty, whse,                                              
+	                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project
+	                    ])
 
        		
 	for rows in data: 
