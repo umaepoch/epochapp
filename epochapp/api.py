@@ -3,11 +3,19 @@ import frappe
 import json
 import frappe.utils
 from frappe.utils import cint, flt, cstr, comma_or, getdate
-from erpnext.setup.utils import get_company_currency
 from frappe import _, throw, msgprint
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
+
+def get_company_currency(company):
+        currency = frappe.db.get_value("Company", company, "default_currency", cache=True)
+        if not currency:
+                currency = frappe.db.get_default("currency")
+        if not currency:
+                throw(_('Please specify Default Currency in Company Master and Global Defaults'))
+
+        return currency
 
 @frappe.whitelist()
 def get_items(doc):
