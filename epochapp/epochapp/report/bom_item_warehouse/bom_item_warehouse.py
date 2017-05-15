@@ -44,9 +44,9 @@ def execute(filters=None):
 
 	                tot_bal_qty = tot_bal_qty + rows[6] 
 			tot_bi_qty = tot_bi_qty + rows[7]
-                        summ_data.append([bom_prev, rows[1], rows[2],
+                        summ_data.append([bom_prev, rows[11], rows[1], rows[2],
 		 	rows[3], rows[4], rows[5], rows[7],
-			rows[6], rows[8], rows[9], rows[10], rows[11]
+			rows[6], rows[8], rows[9], rows[10]
  			]) 
                 else: 
 			bom_work = rows[0] 
@@ -56,7 +56,7 @@ def execute(filters=None):
 				tot_bal_qty = tot_bal_qty + rows[6] 
 				
 				tot_bi_qty = tot_bi_qty + rows[7]
-        	                summ_data.append([bom_prev, rows[1], rows[2],
+        	                summ_data.append([bom_prev, rows[11], rows[1], rows[2],
 			 	rows[3], rows[4], rows[5], rows[7],
 				rows[6], rows[8], 
 				rows[9], rows[10], rows[11]				 
@@ -68,7 +68,7 @@ def execute(filters=None):
 				tot_bal_qty, " ", " ", " "
  				])				 
 
-				summ_data.append([bom_work, rows[1], rows[2], 
+				summ_data.append([bom_work, rows[11], rows[1], rows[2], 
 			 	rows[3], rows[4], rows[5], rows[7], 
 				rows[6], rows[8], 
 				rows[9], rows[10], rows[11]
