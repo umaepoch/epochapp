@@ -97,7 +97,7 @@ def get_columns():
         """return columns"""
         columns = [
 		_("BOM")+":Link/BOM:100",
-		+("Quantity to Make")+"::100",
+		_("Quantity to Make")+"::100",
                 _("Item")+":Link/Item:100",
                 _("Description")+"::140",
                 _("Item Group")+"::100",
@@ -136,12 +136,12 @@ def get_stock_ledger_entries(filters):
 
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select bo.name, bo.company, bo.quantity, bi.item_code, bi.qty as bi_qty
+        	return frappe.db.sql("""select bo.name, bo.company, bo.quantity as bo_qty, bi.item_code, bi.qty as bi_qty
                 	from `tabBOM` bo, `tabBOM Explosion Item` bi where bo.name = bi.parent %s
                 	order by bo.company, bo.name, bi.item_code""" % conditions, as_dict=1)
 	else:
 
-        	return frappe.db.sql("""select bo.name, bo.company, bo.quantity, bi.item_code, bi.qty as bi_qty
+        	return frappe.db.sql("""select bo.name, bo.company, bo.quantity as bo_qty, bi.item_code, bi.qty as bi_qty
                 	from `tabBOM` bo, `tabBOM Item` bi where bo.name = bi.parent %s
        	        	order by bo.company, bo.name, bi.item_code""" % conditions, as_dict=1)
 
@@ -176,7 +176,7 @@ def get_item_warehouse_map(filters):
 	                qty_dict = iwb_map[(d.company, d.name, d.item_code, whse)]
 		
 			qty_dict.bal_qty = get_stock(d.item_code, d.company, whse, from_date, to_date)
-			qty_dict.bom_qty = d.bi_quantity
+			qty_dict.bom_qty = d.bo_qty
 		
         	        qty_dict.bi_qty = d.bi_qty
 
@@ -205,7 +205,7 @@ def get_item_warehouse_map(filters):
 			                	qty_dict = iwb_map[(d.company, d.name, d.item_code, w)]
 			
 						qty_dict.bal_qty = whse_stock
-						qty_dict.bom_qty = d.bi_quantity
+						qty_dict.bom_qty = d.bo_qty
         			        	qty_dict.bi_qty = d.bi_qty
 	
 			
@@ -226,7 +226,7 @@ def get_item_warehouse_map(filters):
 		                qty_dict = iwb_map[(d.company, d.name, d.item_code, " ")]
 		
 				qty_dict.bal_qty = 0
-				qty_dict.bom_qty = d.bi_quantity
+				qty_dict.bom_qty = d.bo_qty
         		        qty_dict.bi_qty = d.bi_qty
 				
 				
