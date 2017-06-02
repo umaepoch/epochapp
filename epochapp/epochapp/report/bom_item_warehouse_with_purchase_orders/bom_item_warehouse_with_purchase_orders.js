@@ -4,26 +4,14 @@
 frappe.query_reports["BOM Item Warehouse with Purchase Orders"] = {
 	"filters": [
 
-		{
-                        "fieldname":"purchase_order",
-                        "label": __("Purchase Order"),
-                        "fieldtype": "Link",
-                        "options": "Purchase Order",
-			                        
-                },
-		{
-                        "fieldname":"sales_order",
-                        "label": __("Sales Order"),
-                        "fieldtype": "Link",
-                        "options": "Sales Order",
-			                        
-                },
 	        {
                         "fieldname":"bom",
                         "label": __("BOM"),
                         "fieldtype": "Link",
                         "options": "BOM",
-			                        
+			"reqd": 1,
+			"get_query": function(){ return {'filters': [['BOM', 'docstatus', '=', '1']]}}
+						                        
                 },
                 
 		{
@@ -34,19 +22,7 @@ frappe.query_reports["BOM Item Warehouse with Purchase Orders"] = {
 			"reqd": 1
                         
                 },
-                {      "fieldname":"from_date",
-                        "label": __("From Date"),
-                        "fieldtype": "Date",
-                        "width": "80",
-                        "default": sys_defaults.year_start_date,
-                },
-                {
-                        "fieldname":"to_date",
-                        "label": __("To Date"),
-                        "fieldtype": "Date",
-                        "width": "80",
-                        "default": frappe.datetime.get_today()
-                },
+                
                 {
                         "fieldname":"warehouse",
                         "label": __("Warehouse"),
@@ -66,14 +42,43 @@ frappe.query_reports["BOM Item Warehouse with Purchase Orders"] = {
 			"fieldtype": "Data",
                         "default": "Y"
 			
+		},
+
+		{
+			"fieldname":"qty_to_make",
+			"label": __("Qty to Make"),
+			"fieldtype": "Data",
+                        "default": "1"
+			
 		}          
+                          
                 
-        ]
+],
+	onload: function(report) {
+		report.page.add_inner_button(__("Make Stock Requisition"), function() {
+			var filters = report.get_values();
+if(filters.company && filters.warehouse && filters.bom){
+	return  frappe.call({
+		method:"erpnext.manufacturing.report.bom_item_warehouse.bom_item_warehouse.make_stock_requisition",
+		callback: function(r) {
+			if(r.message){
+    frappe.set_route('Form', 'Stock Requisition',r.message);
+	}
 }
+
+
+	})
+}else{
+	frappe.msgprint("Please select all three filters For Stock Requisition")
+}
+	});
+	}
+}
+
+
 
 // $(function() {
 //      $(wrapper).bind("show", function() {
 //              frappe.query_report.load();
 //      });
 // });
-

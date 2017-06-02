@@ -5,98 +5,109 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _, msgprint
 from frappe.utils import flt, getdate, datetime
+from erpnext.stock.stock_balance import get_balance_qty_from_sle
 
 def execute(filters=None):
-        if not filters: filters = {}
+
+	if not filters: filters = {}
 
         validate_filters(filters)
-
+	
         columns = get_columns()
+	
         item_map = get_item_details(filters)
+	
         iwb_map = get_item_warehouse_map(filters)
+	
 
         data = []
         summ_data = [] 
-        so_prev = "" 
-        so_work = "" 
-        so_count = 0 
+        bom_prev = "" 
+        bom_work = "" 
+        bom_count = 0 
         tot_bal_qty = 0 
-
+	reqd_qty = 0
         tot_bi_qty = 0
-	tot_si_qty = 0
+	tot_reqd_qty = 0
         
-	for (sales_order, bom, item, bi_item, whse) in sorted(iwb_map):
-                qty_dict = iwb_map[(sales_order, bom, item, bi_item, whse)]
+	for (bom, item, bi_item, purchase_order, whse) in sorted(iwb_map):
+                qty_dict = iwb_map[(bom, item, bi_item, purchase_order, whse)]
 		if bi_item != " ":
-			
+					
 	                data.append([
-	                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[bi_item]["description"],
-	                        item_map[item]["item_group"],
-	                        item_map[item]["item_name"], 
-	                        item_map[item]["stock_uom"], 
+	                        bom, item, item_map[bi_item]["description"],
+	                        item_map[bi_item]["item_group"],
+	                        item_map[bi_item]["item_name"], 
+	                        item_map[bi_item]["stock_uom"], 
 	                        qty_dict.bal_qty, qty_dict.bi_qty, whse,                                              
-	                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project
+	                        purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project, qty_dict.bom_qty, bi_item, qty_dict.qty_to_make
 	                    ])
 		else:
 
 			data.append([
-	                        sales_order, item, qty_dict.si_qty, bom, bi_item, item_map[item]["description"],
+	                        bom, bi_item, item_map[item]["description"],
 	                        item_map[item]["item_group"],
 	                        item_map[item]["item_name"], 
 	                        item_map[item]["stock_uom"], 
 	                        qty_dict.bal_qty, qty_dict.bi_qty, whse,                                              
-	                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project
+	                        qty_dict.purchase_order, qty_dict.pi_item, qty_dict.delivery_date, qty_dict.project, qty_dict.bom_qty, bi_item, qty_dict.qty_to_make
 	                    ])
 
        		
 	for rows in data: 
 
-		if so_count == 0: 
+		if bom_count == 0: 
 
-       			so_prev = rows[0] 
+       			bom_prev = rows[0]
+			
+			reqd_qty = (rows[7] / rows[13]) * flt(rows[15])
 
-	                tot_bal_qty = tot_bal_qty + rows[9] 
-			tot_bi_qty = tot_bi_qty + rows[10]
-                        summ_data.append([so_prev, rows[1], rows[2], rows[15],
-		 	rows[3], rows[4], rows[5], rows[6], rows[7], rows[8], rows[10],
-			rows[9], rows[11], rows[12], rows[13], rows[14]
+	                tot_bal_qty = tot_bal_qty + rows[6] 
+			tot_bi_qty = tot_bi_qty + rows[7]
+			tot_reqd_qty = tot_reqd_qty + reqd_qty
+                        summ_data.append([bom_prev, rows[1], rows[13], rows[2], 
+		 	rows[3], rows[4], rows[5], rows[14], rows[7], reqd_qty, rows[6], rows[8], 
+			rows[9], rows[10], rows[11]
  			]) 
                 else: 
-			so_work = rows[0] 
+			bom_work = rows[0] 
 
-			if so_prev == so_work: 
+			if bom_prev == bom_work: 
 
-				tot_bal_qty = tot_bal_qty + rows[9] 
-				
-				tot_bi_qty = tot_bi_qty + rows[10]
-        	                summ_data.append([so_prev, rows[1], rows[2], rows[15],
-		 	rows[3], rows[4], rows[5], rows[6], rows[7], rows[8], rows[10],
-			rows[9], rows[11], rows[12], rows[13], rows[14]			 
+				tot_bal_qty = tot_bal_qty + rows[6] 
+				reqd_qty = (rows[7] / rows[13]) * flt(rows[15])
+				tot_bi_qty = tot_bi_qty + rows[7]
+				tot_reqd_qty = tot_reqd_qty + reqd_qty
+        	                summ_data.append([bom_prev, rows[1], rows[13], rows[2], 
+		 	rows[3], rows[4], rows[5], rows[14], rows[7], reqd_qty, rows[6], rows[8], 
+			rows[9], rows[10], rows[11]		 
  				]) 
 			else: 
 
-				summ_data.append([so_prev, " ", " ", " ", " ", " ", " ",
-			 	" ", " ", " ", tot_bi_qty,
+				summ_data.append([bom_prev, " ", " ", " ", " ", " ", " ", " ",
+			 	tot_bi_qty, tot_reqd_qty,
 				tot_bal_qty, " ", " ", " ", " "
  				])				 
 
-				summ_data.append([so_work,rows[1], rows[2], rows[15],
-		 	rows[3], rows[4], rows[5], rows[6], rows[7], rows[8], rows[10],
-			rows[9], rows[11], rows[12], rows[13], rows[14]
+				summ_data.append([bom_work, rows[1], rows[13], rows[2], 
+		 	rows[3], rows[4], rows[5], rows[14], rows[7], reqd_qty, rows[6], rows[8], 
+			rows[9], rows[10], rows[11]
  				]) 
         	                        
 				tot_bal_qty = 0 
  
  				tot_bi_qty = 0
-        	                tot_bal_qty = tot_bal_qty + rows[9] 
-				
-				tot_bi_qty = tot_bi_qty + rows[10] 
-				so_prev = so_work 
+				tot_reqd_qty = 0
+        	                tot_bal_qty = tot_bal_qty + rows[6] 
+				reqd_qty = (rows[7] / rows[13]) * flt(rows[15])
+				tot_bi_qty = tot_bi_qty + rows[7]
+				tot_reqd_qty = tot_reqd_qty + reqd_qty
+				bom_prev = bom_work 
                                
-		so_count = so_count + 1 
-	summ_data.append([so_prev, " ", " ", " ", " ", " ", " ",
-		" ", " ", " ", tot_bi_qty,
-		tot_bal_qty, " ", " ", " ",  " "
+		bom_count = bom_count + 1 
+	summ_data.append([bom_prev, " ", " ", " ", " ", " ", " ", " ",
+			 	tot_bi_qty, tot_reqd_qty,
+				tot_bal_qty, " ", " ", " ", " "
  		])	 
 
 						 
@@ -107,26 +118,23 @@ def execute(filters=None):
 def get_columns():
         """return columns"""
         columns = [
-		_("Sales Order")+":Link/Sales Order:100",
-		_("Sales Order Item")+":Link/Item:100",
-		_("SO Qty")+":Float:100",
-		_("Project")+"::100",
 		_("BOM")+":Link/BOM:100",
                 _("Item")+":Link/Item:100",
+		_("BOM Qty")+"::100",
                 _("Description")+"::140",
                 _("Item Group")+"::100",
-                _("Item Name")+"::150",
- #               _("Warehouse")+":Link/Warehouse:100",
+                _("Item Name")+"::150",           
                 _("Stock UOM")+":Link/UOM:90",
-		_("BoM Qty")+":Float:100",
+		_("BOM Item")+":Link/Item:100",
+		_("BoM Item Qty")+":Float:100",
+		_("Required Qty")+":Float:100",
                 _("Balance Qty")+":Float:100",
                 _("Warehouse")+"::100",
                 _("Purchase Order")+":Link/Purchase Order:100",
 		_("Purchase Order Item")+"::100",
 		_("Delivery Date")+"::100"
 
-
-              
+             
          ]
 
         return columns
@@ -135,24 +143,15 @@ def get_conditions(filters):
         conditions = ""
 	
 	if filters.get("company"):
-                conditions += " and so.company = '%s'" % frappe.db.escape(filters.get("company"), percent=False)
+                conditions += " and bo.company = '%s'" % frappe.db.escape(filters.get("company"), percent=False)
 
         if filters.get("item_code"):
-                conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+                conditions += " and bi.item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
      
         if filters.get("bom"):
                 conditions += " and bi.parent = '%s'" % frappe.db.escape(filters.get("bom"), percent=False)
-	if filters.get("sales_order"):
-                conditions += " and si.parent = '%s'" % frappe.db.escape(filters.get("sales_order"), percent=False)
-	if filters.get("purchase_order"):
-                conditions += " and pi.parent = '%s'" % frappe.db.escape(filters.get("purchase_order"), percent=False)
-	if filters.get("from_date"):
-                conditions += " and so.transaction_date >= '%s'" % frappe.db.escape(filters["from_date"])
 		
-	if filters.get("to_date"):
-                conditions += " and so.transaction_date <= '%s'" % frappe.db.escape(filters["to_date"])
-
-
+	
 #       if filters.get("warehouse"):
   #             conditions += " and warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
         return conditions
@@ -163,56 +162,42 @@ def get_sales_order_entries(filters):
 
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
-                	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Explosion Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` pi where bo.name = bi.parent and so.name = si.parent and si.item_code = bo.item and so.status != "Cancelled" and si.delivered_qty < si.qty and pi.item_code = bi.item_code and po.name = pi.parent %s
-                	order by so.name, si.item_code, bo.name, bi.item_code""" % conditions, as_dict=1)
+        	return frappe.db.sql("""select bo.name as bom_name, bo.company, bo.item as bo_item, bo.quantity as bo_qty, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
+                	from `tabBOM` bo, `tabBOM Explosion Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` pi where bo.name = bi.parent and pi.item_code = bi.item_code and po.name = pi.parent and po.per_received < 100 and bo.docstatus = "1" %s
+                	order by bo.name, bi.item_code""" % conditions, as_dict=1)
 	else:
 
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name, bo.company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
-                	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` as pi where bo.name = bi.parent and so.name = si.parent and si.item_code = bo.item and so.status != "Cancelled" and si.delivered_qty < si.qty and pi.item_code = bi.item_code and po.name = pi.parent %s
-                	order by so.name, si.item_code, bo.name, bi.item_code""" % conditions, as_dict=1)
+        	return frappe.db.sql("""select bo.name as bom_name, bo.company, bo.item as bo_item, bo.quantity as bo_qty, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
+                	from `tabBOM` bo, `tabBOM Item` bi, `tabPurchase Order` po, `tabPurchase Order Item` as pi where bo.name = bi.parent and pi.item_code = bi.item_code and po.name = pi.parent and po.per_received < 100 and bo.docstatus = "1" %s
+                	order by bo.name, bi.item_code""" % conditions, as_dict=1)
 
 
 def get_sales_order_entries_2(filters):
 	conditions = get_conditions(filters)
 
-	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as project, " " as bi_item, 0 as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
-                	from `tabSales Order` so, `tabSales Order Item` si
-                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code) and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = si.item_code)""" % conditions, as_dict=1)
-
-def get_sales_order_entries_3(filters):
-	conditions = get_conditions(filters)
-
 	if filters.get("include_exploded_items") == "Y":
 	        
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name as name, bo.company as company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
-                	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Explosion Item` bi
-                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty and bo.item = si.item_code and bo.name = bi.parent %s and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = bi.item_code)""" % conditions, as_dict=1)
+        	return frappe.db.sql("""select bo.name as bom_name, bo.company as company, bo.item as bo_item, bo.quantity as bo_qty, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+                	from `tabBOM` bo, `tabBOM Explosion Item` bi
+                	where bo.name = bi.parent and bo.docstatus = "1" %s and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = bi.item_code)""" % conditions, as_dict=1)
 
 	else:
 
-        	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, bo.name as name, bo.company as company, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
-                	from `tabSales Order` so, `tabSales Order Item` si, `tabBOM` bo, `tabBOM Item` bi
-                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty and bo.item = si.item_code and bo.name = bi.parent %s and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = bi.item_code)""" % conditions, as_dict=1)
+        	return frappe.db.sql("""select bo.name as bom_name, bo.company as company, bo.item as bo_item, bo.quantity as bo_qty, bo.project, bi.item_code as bi_item, bi.qty as bi_qty, " " as purchase_order, " " as pi_item, " " as delivery_date
+                	from `tabBOM` bo, `tabBOM Item` bi
+                	where bo.name = bi.parent and bo.docstatus = "1" %s and not exists (select 1 from `tabPurchase Order Item` pi where pi.item_code = bi.item_code)""" % conditions, as_dict=1)
 
-def get_sales_order_entries_4(filters):
-	conditions = get_conditions(filters)
-
-	return frappe.db.sql("""select so.name as sales_order, si.item_code as item_code, si.qty as si_qty, si.delivered_qty, " " as name, " " as company, " " as project, " " as bi_item, 0 as bi_qty, po.name as purchase_order, pi.item_code as pi_item, pi.schedule_date as delivery_date
-                	from `tabSales Order` so, `tabSales Order Item` si, `tabPurchase Order` po, `tabPurchase Order Item` pi
-                	where so.name = si.parent and so.status != "Cancelled" and si.delivered_qty < si.qty %s and pi.item_code = si.item_code and po.name = pi.parent and not exists ( select 1 from `tabBOM` bo where bo.item = si.item_code)""" % conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
         iwb_map = {}
-        from_date = getdate(filters["from_date"])
-        to_date = getdate(filters["to_date"])
-
+       
         sle = get_sales_order_entries(filters)
+	
 	dle = get_sales_order_entries_2(filters)
-	mle = get_sales_order_entries_3(filters)
-	kle = get_sales_order_entries_4(filters)
 	company = filters.get("company")
 	total_stock = 0
+	qty_to_make = filters.get("qty_to_make")
+	
 	if filters.get("warehouse"):
 		whse = filters.get("warehouse")
 	else:
@@ -221,60 +206,58 @@ def get_item_warehouse_map(filters):
 	
         for d in sle:
 		if filters.get("warehouse"):
-			key = (d.sales_order, d.name, d.item_code, d.bi_item, whse)
+			key = (d.bom_name, d.bo_item, d.bi_item, d.purchase_order, whse)
 				
                 	if key not in iwb_map:
                         	iwb_map[key] = frappe._dict({
                                 	"opening_qty": 0.0, "opening_val": 0.0,
                                 	"in_qty": 0.0, "in_val": 0.0,
                                 	"out_qty": 0.0, "out_val": 0.0,
-					"si_qty": 0.0,
-                                	"bal_qty": 0.0, 
-                                	"bi_qty": 0.0,
+					"bal_qty": 0.0, "bom_qty": 0.0,
+                                	"bi_qty": 0.0, "qty_to_make": 0.0,
                                 	"val_rate": 0.0, "uom": None
                         	})
 
-	                qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, whse)]
+	                qty_dict = iwb_map[(d.bom_name, d.bo_item, d.bi_item, d.purchase_order, whse)]
 		
 			qty_dict.bal_qty = get_stock(d.bi_item, whse)
 		
         	        qty_dict.bi_qty = d.bi_qty
-			qty_dict.si_qty = d.si_qty
-			qty_dict.purchase_order = d.purchase_order
+			qty_dict.bom_qty = d.bo_qty
+			qty_dict.qty_to_make = qty_to_make
 			qty_dict.project = d.project
 			qty_dict.delivery_date = d.delivery_date
 			qty_dict.pi_item = d.pi_item
 
 		else:
 
-			total_stock = get_total_stock(d.item_code)
+			total_stock = get_total_stock(d.bi_item)
 			if total_stock > 0:
 
 				for w in whse:
 
-					whse_stock = get_stock(d.item_code, w)
+					whse_stock = get_stock(d.bi_item, w)
 
 					if whse_stock > 0:
-			                	key = (d.sales_order, d.name, d.item_code, d.bi_item, w)
+			                	key = (d.bom_name, d.bo_item, d.bi_item, d.purchase_order, w)
 					
         		        		if key not in iwb_map:
         		                		iwb_map[key] = frappe._dict({
         		                        		"opening_qty": 0.0, "opening_val": 0.0,
         		                        		"in_qty": 0.0, "in_val": 0.0,
         		                        		"out_qty": 0.0, "out_val": 0.0,
-								"si_qty": 0.0,
-        		                        		"bal_qty": 0.0, 
-        		                        		"bi_qty": 0.0,
+								"bal_qty": 0.0, "bom_qty": 0.0, 
+        		                        		"bi_qty": 0.0, "qty_to_make": 0.0,
         		                        		"val_rate": 0.0, "uom": None
         		                		})
 
-			                	qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, w)]
+			                	qty_dict = iwb_map[(d.bom_name, d.bo_item, d.bi_item, d.purchase_order, w)]
 			
 						qty_dict.bal_qty = whse_stock
 		
         			        	qty_dict.bi_qty = d.bi_qty
-						qty_dict.si_qty = d.si_qty
-						qty_dict.purchase_order = d.purchase_order
+						qty_dict.bom_qty = d.bo_qty
+						qty_dict.qty_to_make = qty_to_make
 						qty_dict.project = d.project
 						qty_dict.delivery_date = d.delivery_date
 						qty_dict.pi_item = d.pi_item
@@ -282,26 +265,25 @@ def get_item_warehouse_map(filters):
 			
 			else:
 
-				key = (d.sales_order, d.name, d.item_code, d.bi_item, " ")
+				key = (d.bom_name, d.bo_item, d.bi_item, d.purchase_order, " ")
 					
         	        	if key not in iwb_map:
         	                	iwb_map[key] = frappe._dict({
         	                        	"opening_qty": 0.0, "opening_val": 0.0,
         	                        	"in_qty": 0.0, "in_val": 0.0,
         	                        	"out_qty": 0.0, "out_val": 0.0,
-						"si_qty": 0.0,
-        	                        	"bal_qty": 0.0, 
-        	                        	"bi_qty": 0.0,
+        	                        	"bal_qty": 0.0, "bom_qty": 0.0,
+        	                        	"bi_qty": 0.0, "qty_to_make": 0.0,
         	                        	"val_rate": 0.0, "uom": None
         	                	})
 
-		                qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, " ")]
+		                qty_dict = iwb_map[(d.bom_name, d.bo_item, d.bi_item, d.purchase_order, " ")]
 		
 				qty_dict.bal_qty = 0
 		
         		        qty_dict.bi_qty = d.bi_qty
-				qty_dict.si_qty = d.si_qty
-				qty_dict.purchase_order = d.purchase_order
+				qty_dict.bom_qty = d.bo_qty
+				qty_dict.qty_to_make = qty_to_make
 				qty_dict.project = d.project
 				qty_dict.delivery_date = d.delivery_date
 				qty_dict.pi_item = d.pi_item
@@ -310,265 +292,87 @@ def get_item_warehouse_map(filters):
 	if dle:
 		for d in dle:
 			if filters.get("warehouse"):
-				key = (d.sales_order, d.name, d.item_code, d.bi_item, whse)
+				key = (d.bom_name, d.bo_item, d.bi_item, d.purchase_order, whse)
 					
                 		if key not in iwb_map:
                 	        	iwb_map[key] = frappe._dict({
                                 	"opening_qty": 0.0, "opening_val": 0.0,
                                 	"in_qty": 0.0, "in_val": 0.0,
                                 	"out_qty": 0.0, "out_val": 0.0,
-					"si_qty": 0.0,
-                                	"bal_qty": 0.0, 
-                                	"bi_qty": 0.0,
+					"bal_qty": 0.0, "bom_qty": 0.0,
+                                	"bi_qty": 0.0, "qty_to_make": 0.0,
                                 	"val_rate": 0.0, "uom": None
                 	        	})
 
-	        	        qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, whse)]
+	        	        qty_dict = iwb_map[(d.bom_name, d.bo_item, d.bi_item, d.purchase_order, whse)]
 		
-				qty_dict.bal_qty = get_stock(d.bi_item, whse)
+				qty_dict.bal_qty = get_stock(d.bi_item, d.purchase_order, whse)
 			
         		        qty_dict.bi_qty = d.bi_qty
-				qty_dict.si_qty = d.si_qty
-				qty_dict.purchase_order = d.purchase_order
+				qty_dict.bom_qty = d.bo_qty
+				qty_dict.qty_to_make = qty_to_make
 				qty_dict.project = d.project
 				qty_dict.delivery_date = d.delivery_date
 				qty_dict.pi_item = d.pi_item
 
 			else:
 
-				total_stock = get_total_stock(d.item_code)
+				total_stock = get_total_stock(d.bi_item)
 				if total_stock > 0:
 
 					for w in whse:
 		
-						whse_stock = get_stock(d.item_code, w)
+						whse_stock = get_stock(d.bi_item, w)
 
 						if whse_stock > 0:
-				                	key = (d.sales_order, d.name, d.item_code, d.bi_item, w)
+				                	key = (d.bom_name, d.bo_item, d.bi_item, d.purchase_order, w)
 							
         			        		if key not in iwb_map:
         			                		iwb_map[key] = frappe._dict({
         		                        		"opening_qty": 0.0, "opening_val": 0.0,
         		                        		"in_qty": 0.0, "in_val": 0.0,
         		                        		"out_qty": 0.0, "out_val": 0.0,
-								"si_qty": 0.0,
-        		                        		"bal_qty": 0.0, 
-        		                        		"bi_qty": 0.0,
+								"bal_qty": 0.0, "bom_qty": 0.0,
+        		                        		"bi_qty": 0.0, "qty_to_make": 0.0,
         		                        		"val_rate": 0.0, "uom": None
         			                		})
 
-				                	qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, w)]
+				                	qty_dict = iwb_map[(d.bom_name, d.bo_item, d.bi_item, d.purchase_order, w)]
 			
 							qty_dict.bal_qty = whse_stock
 		
         				        	qty_dict.bi_qty = d.bi_qty
-							qty_dict.si_qty = d.si_qty
-							qty_dict.purchase_order = d.purchase_order
+							qty_dict.bom_qty = d.bo_qty
+							qty_dict.qty_to_make = qty_to_make
 							qty_dict.project = d.project
 							qty_dict.delivery_date = d.delivery_date
 							qty_dict.pi_item = d.pi_item
 			
 				else:
 
-					key = (d.sales_order, d.name, d.item_code, d.bi_item,  " ")
+					key = (d.bom_name, d.bo_item, d.bi_item, d.purchase_order, " ")
 					
         		        	if key not in iwb_map:
         		                	iwb_map[key] = frappe._dict({
         	                        	"opening_qty": 0.0, "opening_val": 0.0,
         	                        	"in_qty": 0.0, "in_val": 0.0,
         	                        	"out_qty": 0.0, "out_val": 0.0,
-						"si_qty": 0.0,
-        	                        	"bal_qty": 0.0, 
-        	                        	"bi_qty": 0.0,
+        	                        	"bal_qty": 0.0, "bom_qty": 0.0,
+        	                        	"bi_qty": 0.0, "qty_to_make": 0.0,
         	                        	"val_rate": 0.0, "uom": None
         		                	})
 
-			                qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, " ")]
+			                qty_dict = iwb_map[(d.bom_name, d.bo_item, d.bi_item, d.purchase_order, " ")]
 		
 					qty_dict.bal_qty = 0
 		
         			        qty_dict.bi_qty = d.bi_qty
-					qty_dict.si_qty = d.si_qty
-					qty_dict.purchase_order = d.purchase_order
+					qty_dict.bom_qty = d.bo_qty
+					qty_dict.qty_to_make = qty_to_make
 					qty_dict.project = d.project
 					qty_dict.delivery_date = d.delivery_date
 					qty_dict.pi_item = d.pi_item
-
-	if mle:
-		for d in mle:
-			if filters.get("warehouse"):
-				key = (d.sales_order, d.name, d.item_code, d.bi_item, whse)
-					
-                		if key not in iwb_map:
-                	        	iwb_map[key] = frappe._dict({
-                                	"opening_qty": 0.0, "opening_val": 0.0,
-                                	"in_qty": 0.0, "in_val": 0.0,
-                                	"out_qty": 0.0, "out_val": 0.0,
-					"si_qty": 0.0,
-                                	"bal_qty": 0.0, 
-                                	"bi_qty": 0.0,
-                                	"val_rate": 0.0, "uom": None
-                	        	})
-
-	        	        qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, whse)]
-		
-				qty_dict.bal_qty = get_stock(d.bi_item, whse)
-			
-        		        qty_dict.bi_qty = d.bi_qty
-				qty_dict.si_qty = d.si_qty
-				qty_dict.purchase_order = d.purchase_order
-				qty_dict.project = d.project
-				qty_dict.delivery_date = d.delivery_date
-				qty_dict.pi_item = d.pi_item
-
-			else:
-
-				total_stock = get_total_stock(d.item_code)
-				if total_stock > 0:
-
-					for w in whse:
-		
-						whse_stock = get_stock(d.item_code, w)
-
-						if whse_stock > 0:
-				                	key = (d.sales_order, d.name, d.item_code, d.bi_item, w)
-							
-        			        		if key not in iwb_map:
-        			                		iwb_map[key] = frappe._dict({
-        		                        		"opening_qty": 0.0, "opening_val": 0.0,
-        		                        		"in_qty": 0.0, "in_val": 0.0,
-        		                        		"out_qty": 0.0, "out_val": 0.0,
-								"si_qty": 0.0,
-        		                        		"bal_qty": 0.0, 
-        		                        		"bi_qty": 0.0,
-        		                        		"val_rate": 0.0, "uom": None
-        			                		})
-
-				                	qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, w)]
-			
-							qty_dict.bal_qty = whse_stock
-		
-        				        	qty_dict.bi_qty = d.bi_qty
-							qty_dict.si_qty = d.si_qty
-							qty_dict.purchase_order = d.purchase_order
-							qty_dict.project = d.project
-							qty_dict.delivery_date = d.delivery_date
-							qty_dict.pi_item = d.pi_item
-			
-				else:
-
-					key = (d.sales_order, d.name, d.item_code, d.bi_item, " ")
-					
-        		        	if key not in iwb_map:
-        		                	iwb_map[key] = frappe._dict({
-        	                        	"opening_qty": 0.0, "opening_val": 0.0,
-        	                        	"in_qty": 0.0, "in_val": 0.0,
-        	                        	"out_qty": 0.0, "out_val": 0.0,
-						"si_qty": 0.0,
-        	                        	"bal_qty": 0.0, 
-        	                        	"bi_qty": 0.0,
-        	                        	"val_rate": 0.0, "uom": None
-        		                	})
-
-			                qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, " ")]
-		
-					qty_dict.bal_qty = 0
-		
-        			        qty_dict.bi_qty = d.bi_qty
-					qty_dict.si_qty = d.si_qty
-					qty_dict.purchase_order = d.purchase_order
-					qty_dict.project = d.project
-					qty_dict.delivery_date = d.delivery_date
-					qty_dict.pi_item = d.pi_item
-
-	if kle:
-		for d in kle:
-			if filters.get("warehouse"):
-				key = (d.sales_order, d.name, d.item_code, d.bi_item, whse)
-					
-                		if key not in iwb_map:
-                	        	iwb_map[key] = frappe._dict({
-                                	"opening_qty": 0.0, "opening_val": 0.0,
-                                	"in_qty": 0.0, "in_val": 0.0,
-                                	"out_qty": 0.0, "out_val": 0.0,
-					"si_qty": 0.0,
-                                	"bal_qty": 0.0, 
-                                	"bi_qty": 0.0,
-                                	"val_rate": 0.0, "uom": None
-                	        	})
-
-	        	        qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, whse)]
-		
-				qty_dict.bal_qty = get_stock(d.bi_item, whse)
-			
-        		        qty_dict.bi_qty = d.bi_qty
-				qty_dict.si_qty = d.si_qty
-				qty_dict.purchase_order = d.purchase_order
-				qty_dict.project = d.project
-				qty_dict.delivery_date = d.delivery_date
-				qty_dict.pi_item = d.pi_item
-
-			else:
-
-				total_stock = get_total_stock(d.item_code)
-				if total_stock > 0:
-
-					for w in whse:
-		
-						whse_stock = get_stock(d.item_code, w)
-
-						if whse_stock > 0:
-				                	key = (d.sales_order, d.name, d.item_code, d.bi_item, w)
-							
-        			        		if key not in iwb_map:
-        			                		iwb_map[key] = frappe._dict({
-        		                        		"opening_qty": 0.0, "opening_val": 0.0,
-        		                        		"in_qty": 0.0, "in_val": 0.0,
-        		                        		"out_qty": 0.0, "out_val": 0.0,
-								"si_qty": 0.0,
-        		                        		"bal_qty": 0.0, 
-        		                        		"bi_qty": 0.0,
-        		                        		"val_rate": 0.0, "uom": None
-        			                		})
-
-				                	qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, w)]
-			
-							qty_dict.bal_qty = whse_stock
-		
-        				        	qty_dict.bi_qty = d.bi_qty
-							qty_dict.si_qty = d.si_qty
-							qty_dict.purchase_order = d.purchase_order
-							qty_dict.project = d.project
-							qty_dict.delivery_date = d.delivery_date
-							qty_dict.pi_item = d.pi_item
-			
-				else:
-
-					key = (d.sales_order, d.name, d.item_code, d.bi_item, " ")
-					
-        		        	if key not in iwb_map:
-        		                	iwb_map[key] = frappe._dict({
-        	                        	"opening_qty": 0.0, "opening_val": 0.0,
-        	                        	"in_qty": 0.0, "in_val": 0.0,
-        	                        	"out_qty": 0.0, "out_val": 0.0,
-						"si_qty": 0.0,
-        	                        	"bal_qty": 0.0, 
-        	                        	"bi_qty": 0.0,
-        	                        	"val_rate": 0.0, "uom": None
-        		                	})
-
-			                qty_dict = iwb_map[(d.sales_order, d.name, d.item_code, d.bi_item, " ")]
-		
-					qty_dict.bal_qty = 0
-		
-        			        qty_dict.bi_qty = d.bi_qty
-					qty_dict.si_qty = d.si_qty
-					qty_dict.purchase_order = d.purchase_order
-					qty_dict.project = d.project
-					qty_dict.delivery_date = d.delivery_date
-					qty_dict.pi_item = d.pi_item
-
-
+	
 				
 	return iwb_map
 
@@ -579,30 +383,30 @@ def get_warehouses(company):
 
 def get_stock(bi_item, warehouse):
 		
-	max_posting_date = frappe.db.sql("""select max(posting_date) from `tabStock Ledger Entry`
-		where item_code=%s and warehouse = %s""",
-		(bi_item, warehouse))[0][0]
-	max_posting_date = getdate(max_posting_date)
-	max_posting_date1 = datetime.datetime.strftime(max_posting_date, "%Y-%m-%d")
+#	max_posting_date = frappe.db.sql("""select max(posting_date) from `tabStock Ledger Entry`
+#		where item_code=%s and warehouse = %s""",
+#		(bi_item, warehouse))[0][0]
+#	max_posting_date = getdate(max_posting_date)
+#	max_posting_date1 = datetime.datetime.strftime(max_posting_date, "%Y-%m-%d")
 	
-	max_posting_time = frappe.db.sql("""select max(posting_time) from `tabStock Ledger Entry`
-		where item_code=%s and warehouse = %s and posting_date = %s""",
-		(bi_item, warehouse, max_posting_date))[0][0]
+#	max_posting_time = frappe.db.sql("""select max(posting_time) from `tabStock Ledger Entry`
+#		where item_code=%s and warehouse = %s and posting_date = %s""",
+#		(bi_item, warehouse, max_posting_date))[0][0]
 	
 #	max_posting_time = gettime(max_posting_time)
 #	max_posting_time1 = datetime.datetime.strftime(max_posting_time, "%H:%M:%S")
 
-	ssle = frappe.db.sql("""select voucher_no, voucher_type, actual_qty, qty_after_transaction
-		from `tabStock Ledger Entry` sle
-		where item_code=%s and warehouse = %s and posting_date = %s and posting_time = %s""",
-		(bi_item, warehouse, getdate(max_posting_date1), max_posting_time))
+#	ssle = frappe.db.sql("""select voucher_no, voucher_type, actual_qty, qty_after_transaction
+#		from `tabStock Ledger Entry` sle
+#		where item_code=%s and warehouse = %s and posting_date = %s and posting_time = %s""",
+#		(bi_item, warehouse, getdate(max_posting_date1), max_posting_time))
 
-	if ssle:
+#	if ssle:
 
-		item_stock = ssle[0][3]
-	else:
-		item_stock = 0
-	
+#		item_stock = ssle[0][3]
+#	else:
+#		item_stock = 0
+	item_stock = get_balance_qty_from_sle(bi_item, warehouse)	
 				
 	return item_stock
 
@@ -657,3 +461,50 @@ def validate_filters(filters):
 
 
 
+@frappe.whitelist()
+def make_stock_requisition(filters=None):
+	innerJson = ""
+	company = filters_for_button.get("company")
+	newJson = {
+	"company": company,
+	"doctype": "Stock Requisition",
+	"title": "Purchase",
+	"material_request_type": "Purchase",
+
+	"items": [
+]
+}
+	sle = get_stock_ledger_entries(filters_for_button)
+	no_requisition = 0
+	for d in sle:
+		bal_qty = 0
+		if filters_for_button.get("warehouse"):
+			whse = filters_for_button.get("warehouse")
+			bal_qty = get_stock(d.item_code, d.company, whse)
+		req_qty=(bal_qty-d.bi_qty)
+
+		if req_qty < 0:
+			no_requisition += req_qty
+			innerJson =	{
+
+			"doctype": "Stock Requisition Item",
+			"item_code": d.item_code,
+			"qty": -req_qty,
+			"schedule_date": "2017-05-31",
+
+
+
+			"warehouse": filters_for_button.get("warehouse")
+			  }
+			newJson["items"].append(innerJson)
+
+
+	if no_requisition == 0:
+		frappe.msgprint("All Items are in Stock !! Stock Requisition is not required  ")
+	else:
+		doc = frappe.new_doc("Stock Requisition")
+		doc.update(newJson)
+		doc.save()
+
+
+		return doc.name
