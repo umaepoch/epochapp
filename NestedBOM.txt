@@ -1,0 +1,872 @@
+<div align = "center"><font size="3"><b> Job Route Card </b> </font></div>
+<br>
+<font size = "2">
+<table border = 0>
+<tbody>
+	<tr>
+	<td style= "align-left" width="200">Production Order #</td>
+	<td style= "align-left" width="300">{{ doc.name }}</td>
+	</tr>
+	<tr>
+	<td style= "align-left" width="200">Item to Manufacture:</td>
+	<td style= "align-left" width="300">{{ doc.production_item }}</td>
+	<td style= "align-right" width="300">Quantity to Manufacture:</td>
+	<td style= "align-left" width="200">{{ doc.qty }}</td>
+	</tr>
+</tbody>
+</table>
+
+<br>
+<div>BOM: {{ doc.bom_no }}</div>
+<br>
+</font>
+{%- set in_count1 = [] %}
+{%- set in_count2 = [] %}
+{%- set in_count3 = [] %}
+{%- set in_count4 = [] %}
+{%- set in_count5 = [] %}
+{%- set in_count6 = [] %}
+{%- set in_count7 = [] %}
+{%- set in_count8 = [] %}
+{%- set in_count9 = [] %}
+{%- set in_count10 = [] %}
+{% set count = 0 %}
+
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+  {% if row.bom_no %}
+    {%- set _ = in_count1.append(1) -%}
+    {%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+    {%- for r2 in bom2.items -%}
+       {% if r2.bom_no %}
+	 {%- set _ = in_count2.append(1) -%}
+	 {%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+	  {%- for r3 in bom3.items -%}
+	    {% if r3.bom_no %}
+	       {%- set bom4 = frappe.get_doc("BOM", r3.bom_no) -%}
+	       {%- set _ = in_count3.append(1) -%}
+	       {%- for r4 in bom4.items -%}
+		  {% if r4.bom_no %}
+   		    {%- set bom5 = frappe.get_doc("BOM", r4.bom_no) -%}
+		    {%- set _ = in_count4.append(1) -%}
+		    {%- for r5 in bom5.items -%}
+   		       {% if r5.bom_no %}
+			     {%- set bom6 = frappe.get_doc("BOM", r5.bom_no) -%}
+   		  	     {%- set _ = in_count5.append(1) -%}
+			     {%- for r6 in bom6.items -%}
+   				{% if r6.bom_no %}
+				  {%- set bom7 = frappe.get_doc("BOM", r6.bom_no) -%}
+   		  		  {%- set _ = in_count6.append(1) -%}
+                                  {%- for r7 in bom7.items -%}
+   				     {% if r7.bom_no %}
+					{%- set bom8 = frappe.get_doc("BOM", r7.bom_no) -%}
+   		  			{%- set _ = in_count7.append(1) -%}
+				     {% endif %}	
+				  {% endfor %}
+				{% endif %}	
+			     {% endfor %}	
+			   {% endif %}	
+		         {% endfor %}	
+			{% endif %}							
+		      {% endfor %}
+	          {% endif %}
+		{% endfor %}	
+	      {% endif %}	
+	    {% endfor %}
+	{% endif %}
+
+{% endfor %}
+
+{% if in_count7 %}
+	{% set count = 8 %}
+{% elif in_count6 %}
+	{% set count = 7 %}
+{% elif in_count5 %}
+	{% set count = 6 %}
+{% elif in_count4 %}
+	{% set count = 5 %}
+{% elif in_count3 %}
+	{% set count = 4 %}
+{% elif in_count2 %}
+	{% set count = 3 %}
+{% elif in_count1 %}
+	{% set count = 2 %}
+{% endif %}
+
+<font size = "2">
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+<table border = 0>
+<tbody>
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+     {% if row.bom_no %}
+	{%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+		{%- for r2 in bom2.items -%}
+		    {% if r2.bom_no %}
+			{%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+			{%- for r3 in bom3.items -%}
+				{% if r3.bom_no %}
+				   {%- set bom4 = frappe.get_doc("BOM", r3.bom_no) -%}
+			           {%- for r4 in bom4.items -%}
+				    {% if r4.bom_no %}
+				      {%- set bom5 = frappe.get_doc("BOM", r4.bom_no) -%}
+	    		              {%- for r5 in bom5.items -%}
+				         {% if r5.bom_no %}
+					  {%- set bom6 = frappe.get_doc("BOM", r5.bom_no) -%}
+	    		                  {%- for r6 in bom6.items -%}
+				           {% if r6.bom_no %}
+					    {%- set bom7 = frappe.get_doc("BOM", r6.bom_no) -%}
+	    		                    {%- for r7 in bom7.items -%}
+				            {% if r7.bom_no %}
+						
+					<table border = 0>
+					<tbody>
+					{%- set bom8 = frappe.get_doc("BOM", r7.bom_no) -%}
+					<b> Phase: {{ count - 7 }}</b>
+					<br>
+					{% set new_qty_to_man = (row.qty / bom.quantity) * (r2.qty/bom2.quantity) * (r3.qty/bom3.quantity) * (r4.qty/bom4.quantity) * (r5.qty/bom5.quantity) * (r6.qty/bom6.quantity) * (r7.qty/bom7.quantity) * doc.qty %}
+					<div>Item to Manufacture: {{ bom8.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+					<br>
+					<div>BOM: {{ bom8.name }}</div>
+					<br>
+					<div>Constituents</div>
+					<tr>
+					<th style="background-color:White">Sr</th>
+					<th style="background-color:White">Item Code</th>
+					<th style="background-color:White">Qty Needed for Manufacturing</th>
+					<th style="background-color:White">Made/Bought</th>
+					<th style="background-color:White">WiP Material Available in Stock?</th>
+					<th style="background-color:White">Material Transfer Number</th>
+					<th style="background-color:White">Material Transfer Date</th>
+					<th style="background-color:White">Quantity Consumed</th>
+					</tr>
+			
+				{%- for r8 in bom8.items -%}
+					<tr>
+					<td style="width: 3%;">{{ r8.idx }}</td>
+					<td style="width: 20%;">
+					{{ r8.item_code }}
+					</td>
+					<td style="width: 10%;"> 
+					{% set reqd_qty = new_qty_to_man/bom8.quantity * r8.qty %}
+					{{ reqd_qty }}
+					</td>
+					
+					<td style="width: 20%;">
+					{% if r8.bom_no %}
+						{% set made_bought = "Made" %}
+					{% else %}
+						{% set made_bought = "Bought" %}
+					{% endif %}
+					
+					{{ made_bought }}
+					</td>
+			
+									
+					</tr>
+				  {% endfor %}
+				</tbody>
+				</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+					{% endif %}
+		      	    	     {% endfor %}	
+				    {% endif %}
+		      	    	  {% endfor %}	
+				{% endif %}
+		      	    {% endfor %}	
+			{% endif %}
+		      {% endfor %}	
+		   {% endif %}
+		{% endfor %}	
+	    {% endif %}	
+	{% endfor %}
+      {% endif %}
+
+{% endfor %}
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+<table border = 0>
+<tbody>
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+     {% if row.bom_no %}
+	{%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+		{%- for r2 in bom2.items -%}
+		    {% if r2.bom_no %}
+			{%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+			{%- for r3 in bom3.items -%}
+				{% if r3.bom_no %}
+				   {%- set bom4 = frappe.get_doc("BOM", r3.bom_no) -%}
+			           {%- for r4 in bom4.items -%}
+				    {% if r4.bom_no %}
+				      {%- set bom5 = frappe.get_doc("BOM", r4.bom_no) -%}
+	    		              {%- for r5 in bom5.items -%}
+				         {% if r5.bom_no %}
+					  {%- set bom6 = frappe.get_doc("BOM", r5.bom_no) -%}
+	    		                  {%- for r6 in bom6.items -%}
+				          {% if r6.bom_no %}
+					<table border = 0>
+					<tbody>
+					{%- set bom7 = frappe.get_doc("BOM", r6.bom_no) -%}
+					<b> Phase: {{ count - 6 }}</b>
+					<br>
+					{% set new_qty_to_man = (row.qty / bom.quantity) * (r2.qty/bom2.quantity) * (r3.qty/bom3.quantity) * (r4.qty/bom4.quantity) * (r5.qty/bom5.quantity) * (r6.qty/bom6.quantity) * doc.qty %}
+					<div>Item to Manufacture: {{ bom7.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+					<br>
+					<div>BOM: {{ bom7.name }}</div>
+					<br>
+					<div>Constituents</div>
+					<tr>
+					<th style="background-color:White">Sr</th>
+					<th style="background-color:White">Item Code</th>
+					<th style="background-color:White">Qty Needed for Manufacturing</th>
+					<th style="background-color:White">Made/Bought</th>
+					<th style="background-color:White">WiP Material Available in Stock?</th>
+					<th style="background-color:White">Material Transfer Number</th>
+					<th style="background-color:White">Material Transfer Date</th>
+					<th style="background-color:White">Quantity Consumed</th>
+					</tr>
+			
+				{%- for r7 in bom7.items -%}
+					<tr>
+					<td style="width: 3%;">{{ r7.idx }}</td>
+					<td style="width: 20%;">
+					{{ r7.item_code }}
+					</td>
+					<td style="width: 10%;"> 
+					{% set reqd_qty = new_qty_to_man/bom7.quantity * r7.qty %}
+					{{ reqd_qty }}
+					</td>
+					
+					<td style="width: 20%;">
+					{% if r7.bom_no %}
+						{% set made_bought = "Made" %}
+					{% else %}
+						{% set made_bought = "Bought" %}
+					{% endif %}
+					
+					{{ made_bought }}
+					</td>
+			
+									
+					</tr>
+				  {% endfor %}
+				</tbody>
+				</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+				  {% endif %}
+		      	    	  {% endfor %}	
+				{% endif %}
+		      	    {% endfor %}	
+			{% endif %}
+		      {% endfor %}	
+		   {% endif %}
+		{% endfor %}	
+	    {% endif %}	
+	{% endfor %}
+      {% endif %}
+
+{% endfor %}
+
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+<table border = 0>
+<tbody>
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+     {% if row.bom_no %}
+	{%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+		{%- for r2 in bom2.items -%}
+		    {% if r2.bom_no %}
+			{%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+			{%- for r3 in bom3.items -%}
+				{% if r3.bom_no %}
+				   {%- set bom4 = frappe.get_doc("BOM", r3.bom_no) -%}
+			           {%- for r4 in bom4.items -%}
+				    {% if r4.bom_no %}
+				      {%- set bom5 = frappe.get_doc("BOM", r4.bom_no) -%}
+	    		              {%- for r5 in bom5.items -%}
+				         {% if r5.bom_no %}
+					<table border = 0>
+					<tbody>
+					{%- set bom6 = frappe.get_doc("BOM", r5.bom_no) -%}
+					<b> Phase: {{ count - 5 }}</b>
+					<br>
+					{% set new_qty_to_man = (row.qty / bom.quantity) * (r2.qty/bom2.quantity) * (r3.qty/bom3.quantity) * (r4.qty/bom4.quantity) * (r5.qty/bom5.quantity) * doc.qty %}
+					<div>Item to Manufacture: {{ bom6.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+					<br>
+					<div>BOM: {{ bom6.name }}</div>
+					<br>
+					<div>Constituents</div>
+					<tr>
+					<th style="background-color:White">Sr</th>
+					<th style="background-color:White">Item Code</th>
+					<th style="background-color:White">Qty Needed for Manufacturing</th>
+					<th style="background-color:White">Made/Bought</th>
+					<th style="background-color:White">WiP Material Available in Stock?</th>
+					<th style="background-color:White">Material Transfer Number</th>
+					<th style="background-color:White">Material Transfer Date</th>
+					<th style="background-color:White">Quantity Consumed</th>
+					</tr>
+			
+				{%- for r6 in bom6.items -%}
+					<tr>
+					<td style="width: 3%;">{{ r6.idx }}</td>
+					<td style="width: 20%;">
+					{{ r6.item_code }}
+					</td>
+					<td style="width: 10%;"> 
+					{% set reqd_qty = new_qty_to_man/bom6.quantity * r6.qty %}
+					{{ reqd_qty }}
+					</td>
+					
+					<td style="width: 20%;">
+					{% if r6.bom_no %}
+						{% set made_bought = "Made" %}
+					{% else %}
+						{% set made_bought = "Bought" %}
+					{% endif %}
+					
+					{{ made_bought }}
+					</td>
+			
+									
+					</tr>
+				  {% endfor %}
+				</tbody>
+				</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+				{% endif %}
+		      	    {% endfor %}	
+			{% endif %}
+		      {% endfor %}	
+		   {% endif %}
+		{% endfor %}	
+	    {% endif %}	
+	{% endfor %}
+      {% endif %}
+
+{% endfor %}
+
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+<table border = 0>
+<tbody>
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+     {% if row.bom_no %}
+	{%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+		{%- for r2 in bom2.items -%}
+		    {% if r2.bom_no %}
+			{%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+			{%- for r3 in bom3.items -%}
+				{% if r3.bom_no %}
+				   {%- set bom4 = frappe.get_doc("BOM", r3.bom_no) -%}
+			           {%- for r4 in bom4.items -%}
+				    {% if r4.bom_no %}
+					<table border = 0>
+					<tbody>
+					{%- set bom5 = frappe.get_doc("BOM", r4.bom_no) -%}
+					<b> Phase: {{ count - 4 }}</b>
+					<br>
+					{% set new_qty_to_man = (row.qty / bom.quantity) * (r2.qty/bom2.quantity) * (r3.qty/bom3.quantity) * (r4.qty/bom4.quantity) * doc.qty %}
+					<div>Item to Manufacture: {{ bom5.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+					<br>
+					<div>BOM: {{ bom5.name }}</div>
+					<br>
+					<div>Constituents</div>
+					<tr>
+					<th style="background-color:White">Sr</th>
+					<th style="background-color:White">Item Code</th>
+					<th style="background-color:White">Qty Needed for Manufacturing</th>
+					<th style="background-color:White">Made/Bought</th>
+					<th style="background-color:White">WiP Material Available in Stock?</th>
+					<th style="background-color:White">Material Transfer Number</th>
+					<th style="background-color:White">Material Transfer Date</th>
+					<th style="background-color:White">Quantity Consumed</th>
+					</tr>
+			
+				{%- for r5 in bom5.items -%}
+					<tr>
+					<td style="width: 3%;">{{ r5.idx }}</td>
+					<td style="width: 20%;">
+					{{ r5.item_code }}
+					</td>
+					<td style="width: 10%;"> 
+					{% set reqd_qty = new_qty_to_man/bom5.quantity * r5.qty %}
+					{{ reqd_qty }}
+					</td>
+					
+					<td style="width: 20%;">
+					{% if r5.bom_no %}
+						{% set made_bought = "Made" %}
+					{% else %}
+						{% set made_bought = "Bought" %}
+					{% endif %}
+					
+					{{ made_bought }}
+					</td>
+			
+									
+					</tr>
+				  {% endfor %}
+				</tbody>
+				</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+				{% endif %}
+				{% endfor %}	
+				{% endif %}
+			{% endfor %}	
+		      {% endif %}	
+		{% endfor %}
+	      {% endif %}
+
+{% endfor %}
+
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+<table border = 0>
+<tbody>
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+     {% if row.bom_no %}
+	{%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+		{%- for r2 in bom2.items -%}
+		    {% if r2.bom_no %}
+			{%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+			{%- for r3 in bom3.items -%}
+				{% if r3.bom_no %}
+					<table border = 0>
+					<tbody>
+					{%- set bom4 = frappe.get_doc("BOM", r3.bom_no) -%}
+					<b> Phase: {{ count - 3 }}</b>
+					<br>
+					{% set new_qty_to_man = (row.qty / bom.quantity) * (r2.qty/bom2.quantity) * (r3.qty/bom3.quantity) * doc.qty %}
+					<div>Item to Manufacture: {{ bom4.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+					<br>
+					<div>BOM: {{ bom4.name }}</div>
+					<br>
+					<div>Constituents</div>
+					<tr>
+					<th style="background-color:White">Sr</th>
+					<th style="background-color:White">Item Code</th>
+					<th style="background-color:White">Qty Needed for Manufacturing</th>
+					<th style="background-color:White">Made/Bought</th>
+					<th style="background-color:White">WiP Material Available in Stock?</th>
+					<th style="background-color:White">Material Transfer Number</th>
+					<th style="background-color:White">Material Transfer Date</th>
+					<th style="background-color:White">Quantity Consumed</th>
+					</tr>
+			
+				{%- for r4 in bom4.items -%}
+					<tr>
+					<td style="width: 3%;">{{ r4.idx }}</td>
+					<td style="width: 20%;">
+					{{ r4.item_code }}
+					</td>
+					<td style="width: 10%;"> 
+					{% set reqd_qty = new_qty_to_man/bom4.quantity * r4.qty %}
+					{{ reqd_qty }}
+					</td>
+					
+					<td style="width: 20%;">
+					{% if r4.bom_no %}
+						{% set made_bought = "Made" %}
+					{% else %}
+						{% set made_bought = "Bought" %}
+					{% endif %}
+					
+					{{ made_bought }}
+					</td>
+			
+									
+					</tr>
+				  {% endfor %}
+				</tbody>
+				</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+
+				{% endif %}
+			{% endfor %}	
+		      {% endif %}	
+		{% endfor %}
+	      {% endif %}
+
+{% endfor %}
+
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+{%- for row in bom.items -%}
+      {% if row.bom_no %}
+	{%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+	    	{%- for r2 in bom2.items -%}
+		    {% if r2.bom_no %}
+			<table border = 0>
+			<tbody>
+			{%- set bom3 = frappe.get_doc("BOM", r2.bom_no) -%}
+			<b> Phase: {{ count - 2 }} </b>
+			<br>
+			{% set new_qty_to_man = (row.qty / bom.quantity) * (r2.qty/bom2.quantity) * doc.qty %}
+			<div>Item to Manufacture: {{ bom3.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+			<br>
+			<div>BOM: {{ bom3.name }}</div>
+			<br>
+			<div>Constituents</div>
+			<tr>
+			<th>Sr</th>
+			<th>Item Code</th>
+			<th>Qty Needed for Manufacturing</th>
+			<th>Made/Bought</th>
+			<th>WiP Material Available in Stock?</th>
+			<th>Material Transfer Number</th>
+			<th>Material Transfer Date</th>
+			<th>Quantity Consumed</th>
+			</tr>
+	
+		  {%- for r3 in bom3.items -%}
+			  <tr>
+				<td style="width: 3%;">{{ r3.idx }}</td>
+				<td style="width: 20%;">
+				{{ r3.item_code }}
+				</td>
+				<td style="width: 20%;">
+				{% set reqd_qty = new_qty_to_man/bom3.quantity * r3.qty %}
+				{{ reqd_qty }}
+			
+				</td>
+				
+				<td style="width: 20%;">
+				{% if r3.bom_no %}
+					{% set made_bought = "Made" %}
+				{% else %}
+					{% set made_bought = "Bought" %}
+				{% endif %}
+					
+				{{ made_bought }}
+				</td>
+			</tr>
+			{% endfor %}	
+			</tbody>
+			</table>	
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+
+		      {% endif %}
+		{% endfor %}
+	      {% endif %}
+
+{% endfor %}
+
+{% set new_qty_to_man = 0 %}
+{% set qty_reqd = 0 %}
+{% set made_bought = "" %}
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+
+{%- for row in bom.items -%}
+       {% if row.bom_no %}
+	<table border = 0>
+	<tbody>
+	 {%- set bom2 = frappe.get_doc("BOM", row.bom_no) -%}
+	<b> Phase : {{ count - 1 }} </b>
+	<br>
+	{% set new_qty_to_man = (row.qty / bom.quantity) * doc.qty %}
+	<div>Item to Manufacture: {{ bom2.item }} &nbsp &nbsp Quantity to Manufacture: {{ new_qty_to_man }}</div>
+	<br>
+	<div>BOM: {{ bom2.name }}</div>
+	<br>
+	
+	<div>Constituents</div>
+	<tr>
+			<th>Sr</th>
+			<th>Item Code</th>
+			<th>Qty Needed for Manufacturing</th>
+			<th>Made/Bought</th>
+			<th>WiP Material Available in Stock?</th>
+			<th>Material Transfer Number</th>
+			<th>Material Transfer Date</th>
+			<th>Quantity Consumed</th>
+		</tr>
+            {%- for r2 in bom2.items -%}
+		<tr>
+		<td style="width: 3%;">{{ r2.idx }}</td>
+			<td style="width: 20%;">
+				{{ r2.item_code }}
+			</td>
+			<td style="width: 20%;">
+			   {% set qty_reqd = new_qty_to_man/bom2.quantity * r2.qty %}
+				{{ qty_reqd }}			
+			</td>
+			<td style="width: 20%;">
+			{% if r2.bom_no %}
+				{% set made_bought = "Made" %}
+			{% else %}
+				{% set made_bought = "Bought" %}
+			{% endif %}
+					
+			{{ made_bought }}
+			</td>
+    
+			
+		</tr>
+		
+          {% endfor %}
+
+	</tbody>
+	</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+
+
+     {% endif %}      
+{% endfor %}
+
+
+{% set qty_to_man = 0 %}
+{% set made_bought = "" %}
+{%- set bom = frappe.get_doc("BOM", doc.bom_no) -%}
+<table>
+<tbody>
+<div><b>Phase : {{ count }}</b></div>
+<br>
+Item to Manufacture: {{ doc.production_item }} &nbsp &nbsp Quantity to Manufacture: {{ doc.qty }}</div>
+<br>
+<div>BOM: {{ doc.bom_no }}</div>
+<br>
+<div>Constituents</div>
+<tr>
+	<th>Sr</th>
+	<th>Item Code</th>
+	<th>Qty Needed for Manufacturing</th>
+	<th>Made/Bought</th>
+	<th>WiP Material Available in Stock?</th>
+	<th>Material Transfer Number</th>
+	<th>Material Transfer Date</th>
+	<th>Quantity Consumed</th>
+</tr>
+{% set qty_to_man = doc.quantity %}
+{%- for row in bom.items -%}
+		<tr>
+			<td style="width: 3%;">{{ row.idx }}</td>
+			<td style="width: 20%;">
+				{{ row.item_code }}
+			</td>
+			<td style="width: 20%;">
+			   {{ row.qty/bom.quantity * doc.qty }}			
+			</td>
+			<td style="width: 20%;">
+			{% if row.bom_no %}
+				{% set made_bought = "Made" %}
+			{% else %}
+				{% set made_bought = "Bought" %}
+			{% endif %}
+					
+			{{ made_bought }}
+			</td>
+
+		</tr>
+
+{% endfor %}	
+
+</tbody>
+</table>
+<br>
+<br>
+<table class="table table-bordered" >
+<tbody>
+<tr>
+<td width = "200"><div>Manufactured On (Date)</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Machine(s) Used</div></td>
+<td width = "600"></td>
+</tr>
+<tr>
+<td width = "200"><div>Operator</div></td>
+<td width = "600""></td>
+</tr>
+<tr>
+<td width = "200"><div>Supervisor</div></td>
+<td width = "600"></td>
+</tr>
+</tbody>
+</table>
+
+
+</font>
+<br>
+<br>
+
