@@ -1,12 +1,32 @@
 from __future__ import unicode_literals
 import frappe
-import json
-import frappe.utils
 from frappe.utils import cint, flt, cstr, comma_or, getdate
 from frappe import _, throw, msgprint
 from frappe.model.mapper import get_mapped_doc
+
 from erpnext.accounts.party import get_party_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
+
+@frappe.whitelist()
+def calculate_overtime(employee, start_date, end_date):
+	
+	overtime_hours = frappe.db.sql("""select sum(overtime_hours)
+			from `tabAttendance` where employee = %s and attendance_date >= %s and attendance_date <= %s""",
+			(employee, start_date, end_date))
+	
+	return overtime_hours
+
+#	overtime_amount = ((emp_basic + emp_da)/30/8 * overtime_hours)
+
+@frappe.whitelist()
+def insert_overtime(self):
+	msgprint(_("Inside"))
+	msgprint(_(self))
+	record = frappe.get_doc("Salary Slip", self)
+	msgprint(_(record.salary_component))
+	frappe.db.sql("""insert""")
+	
+
 
 def get_company_currency(company):
         currency = frappe.db.get_value("Company", company, "default_currency", cache=True)
@@ -16,6 +36,8 @@ def get_company_currency(company):
                 throw(_('Please specify Default Currency in Company Master and Global Defaults'))
 
         return currency
+
+
 
 @frappe.whitelist()
 def get_items(doc):
