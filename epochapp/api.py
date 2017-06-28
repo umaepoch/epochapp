@@ -1,31 +1,35 @@
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import cint, flt, cstr, comma_or, getdate
-from frappe import _, throw, msgprint
-from frappe.model.mapper import get_mapped_doc
+from frappe.utils import add_days, cint, cstr, flt, getdate, rounded, date_diff, money_in_words
+from frappe.model.naming import make_autoname
 
+from frappe import msgprint, _, throw
+from erpnext.hr.doctype.process_payroll.process_payroll import get_start_end_dates
+from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
+from erpnext.utilities.transaction_base import TransactionBase
+from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
 
+
 @frappe.whitelist()
-def calculate_overtime(employee, start_date, end_date):
+def calculate_overtime_and_food(employee, start_date, end_date):
 	
 	overtime_hours = frappe.db.sql("""select sum(overtime_hours)
 			from `tabAttendance` where employee = %s and attendance_date >= %s and attendance_date <= %s""",
 			(employee, start_date, end_date))
+
+	food_allow = frappe.db.sql("""select count(food_allowance)
+			from `tabAttendance` where employee = %s and attendance_date >= %s and attendance_date <= %s and food_allowance = 'Yes'""", (employee, start_date, end_date))
+
 	
-	return overtime_hours
+#	food_allow = food_allow[0][0]
+	
+	
+	return overtime_hours, food_allow
 
 #	overtime_amount = ((emp_basic + emp_da)/30/8 * overtime_hours)
 
-@frappe.whitelist()
-def insert_overtime(self):
-	msgprint(_("Inside"))
-	msgprint(_(self))
-	record = frappe.get_doc("Salary Slip", self)
-	msgprint(_(record.salary_component))
-	frappe.db.sql("""insert""")
-	
 
 
 def get_company_currency(company):
@@ -441,5 +445,7 @@ def get_serial_number(item, second_uom, second_uom_qty):
 	frappe.db.sql("""update `tabSerial Number` set sno = %s, item = %s, second_uom = %s, second_uom_qty = %s""", (next_serial_number, item, second_uom, second_uom_qty))	           
 	
         return next_serial_number
+
+
 
 
