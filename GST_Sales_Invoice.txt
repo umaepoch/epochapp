@@ -1,0 +1,438 @@
+<div class = "letter head">
+	<table border =0>
+		<tbody>
+                	<tr>
+                        	<td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "120">
+                                   <img src = "/files/AForgeLogo3.png" width = "100" height = "70">
+                                </td>
+                                <td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "650"> 
+                                   <div class = "text-center"><font size = "2"><b> GST TAX INVOICE</b></font>
+                                   </div>
+                                   <div class = "text-center">
+                                     <font size = "1"><b>(Form GST INV -1 (See Rule...)</b></font>
+                                   </div>
+
+                                   <div class = "text-center">
+                                      <font size = "3"><b>Company Name</b></font>
+                                   </div>
+                                   <div class = "text-center">
+                                       <font size = "1"><b> Company Address</b></font>
+                                   </div>
+                                   <div class = "text-center">
+                                    <font size = "1"><b>Company Details</b><font><br><br>
+                                  </div>
+                               </td>
+                             <td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "150">
+                               <div class = "text-right">
+                                 <font size = "1">(Original for Buyer)</font>
+                              </div>  
+                             </td>
+                          </tr>
+                      </tbody>
+                   </table>
+</div>
+
+        
+<div class="Header">
+	<table border =0>
+		<tbody>
+                	<tr>
+                        	<td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "160">
+
+	                          <div> <font size = "1">GSTIN </font> </div> 
+	                          <div><font size = "1">State</font></div>
+                                  
+                                </td>
+                                <td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "200">
+
+	                          <div > <font size = "1"><b>: {{ doc.company_gstin }}</b></font> </div> 
+	                          <div><font size = "1"><b>: Karnataka</b></font></div>
+                                 
+                                </td>
+				<td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "160">
+                        	<div><font size = "1">Serial No of Invoice</font></div>
+				  <div><font size = "1">Date of Invoice</font></div>      
+				</td>
+                                <td style=" padding: 0px 6px 0px 6px !important;" colspan=1 width = "200">
+   				 <div><font size = "1"><b>: {{ doc.name }}</b></font></div>
+				  <div><font size = "1"><b>: {{ doc.get_formatted("posting_date") }}</b></font></div>
+                              </tr>
+			
+                           </tbody>
+                        </table>
+             </div>
+<hr>
+
+<div class="seller-info new-seller-info">
+	<table border =0>
+		<tbody>
+                	<tr>
+                        	<td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+				   <div> <font size = "2"><b>Billto Address: </font></b> </div><br>
+	                          <div> <font size = "1"><b>Customer Name </b></font> </div> 
+	                          <div><font size = "1"><b>Address </b></font></div><br>
+				</td>
+				                                    
+                                <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+                                  <br><br><div><b><font size = "2"> {{ doc.customer_name }}</font></b> </div>
+                                  <div> <font size = "1"> {{ doc.address_display }} </font></div> 
+				</td>
+			
+   
+                               <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+	                        <div> <font size = "2"><b>Ship To Address: </b></font> </div> <br>
+	                          <div> <font size = "1"><b>Customer Name </b></font> </div> 
+	                          <div><font size = "1"><b>Address </b></font></div><br>
+				</td>
+				 
+ 
+                              <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+				 <br><br><div><b><font size = "2"> {{ doc.shipping_address_name }}</font></b> </div>
+                                  <div> <font size = "1"> {{ doc.shipping_address }} </font></div> 
+				</td>
+			</tr>					
+			<tr>
+			    <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+				<font size = "1">
+				<div><b>State</b> </div>
+                                  <div><b>GSTIN </b> </div><br>
+				</font>
+                             </td>
+			     <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+				<font size = "1">
+				<div>{{ doc.billto_state }}</div>
+                                <div>{{ doc.billto_gstin }}</div><br>
+				</font>
+                              </td>
+			      <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+				<font size = "1">
+				<div><b>State</b> </div>
+                                  <div><b>Customer GSTIN </b> </div><br>
+				</font>
+                                </td>
+				<td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+				<font size = "1">
+				<div>{{ doc.customer_state }}</div>
+                                <div>{{ doc.customer_gstin }}</div><br>
+				</font>
+                              </td>
+                           </tr>
+
+                      	<tr>
+                           <td style=" padding: 0px 6px 0px 6px !important;"  width = "200">
+	                          <font size = "1">
+				  
+                                  <div><b>Mobile No </b>  </div>
+	                          <div><b>PO No </b>  </div>
+	                          <div><b>PO Date </b> </div><br><br>
+	                          <div><b>Date Time of Invoice </b> </div>
+	                          <div><b>Date Time of Removal of Goods</b> </div>
+                                  </font>
+                               </td>
+                           <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+                              <font size = "1">
+			      <div> {{ doc.contact_mobile }}</div> 
+                              <div>{{ doc.po_no }}</div> 
+                              <div> {{ doc.get_formatted("po_date")}}</div><br><br>
+                              <div> {{ doc.get_formatted("date_time_of_invoice")}}</div>
+                              <div>{{ doc.get_formatted("date_time_of_removal_of_goods")}}</div>
+                              </font>
+                           </td>
+                           
+                           <td style=" padding: 0px 6px 0px 6px !important;" width = "200">
+                             <font size = "1">
+                              <div><b>Date </b> </div>
+                              <div><b>Payment Due Date </b> </div>
+			      <div><b>PAN No </b> </div>
+                              <div><b>Vendor Code </b> </div><br>
+                              <div><b>Authenticated by </b></div>
+                              <div>for <b>Company Name</b> </div><br><br>
+                              <div><b>Authorized Signatory</b> </div><br>
+                             </font>       
+                           </td>
+                           
+                           <td style=" padding: 0px 6px 0px 6px !important;" width = "200">                          
+                              <font size = "1">
+			      <div>{{ doc.get_formatted("posting_date") }}</div>
+	                        <div>{{ doc.get_formatted("due_date") }}</div>
+	                      <div>{{ doc.pan_number }}</div>         
+                              <div>{{ doc.vendor_code }}</div><br><br><br><br><br><br><br>
+                                                        
+                              </font>
+                          </td>
+                          </tr>                             
+                         </tbody>
+                      </table>
+                 </div>
+
+
+<table border = 2; width = "750">
+	<tbody>
+                 
+			<tr>
+                        <th><font size = "1">Sr</font></th>
+			<th><font size = "1">Description</font></th>
+			<th><font size = "1">Tariff/HSN</font></th>
+			<th class="text-right"><font size = "1">Quantity</font></th>
+			<th class="text-right"><font size = "1">Rate</font></th>
+			<th class="text-right"><font size = "1">Amount</font></th>
+			<th class="text-right"><font size = "1">CGST Rate</font></th>
+			<th class="text-right"><font size = "1">CGST Amount</font></th>
+			<th class="text-right"><font size = "1">SGST Rate</font></th>
+			<th class="text-right"><font size = "1">SGST Amount</font></th>
+			<th class="text-right"><font size = "1">IGST Rate</font></th>
+			<th class="text-right"><font size = "1">IGST Amount</font></th>
+
+
+                      </font>
+		</tr>
+
+		{% set cgst_rate = [] -%}
+		 {% set sgst_rate = [] -%}
+		 {% set igst_rate = [] -%}
+		{% set cgst_account_head = [] -%}
+		 {% set sgst_account_head = [] -%}
+		 {% set igst_account_head = [] -%}
+		{% set tot_cgst_amount = [] %}
+		{% set tot_sgst_amount = [] %}
+		{% set grand_total = {"qty":0.0, "amount":0.0, "cgst_amt":0.0, "sgst_amt":0.0, "igst_amt":0.0} %}
+
+		{%- for row in doc.taxes -%}
+	  	   {% if 'CGST' in row.account_head -%}
+			{% set _ = cgst_account_head.append(row.account_head) %}
+			{% set _ = cgst_rate.append(row.rate) %}
+			
+		   {%- endif -%}
+		   {% if 'SGST' in row.account_head -%}
+			 {% set _ = sgst_account_head.append(row.account_head) %}
+			{% set _ = sgst_rate.append(row.rate) %}
+			
+		   {%- endif -%}
+		   {% if 'IGST' in row.account_head -%}
+
+			{% set _ = igst_account_head.append(row.account_head) %}
+			{% set _ = igst_rate.append(row.rate) %}
+			
+		   {%- endif -%}
+		{%- endfor -%}
+
+	{%- for row in doc.items -%}
+		<tr>
+		        {% set cgst_amt = [] -%}
+		 	 {% set sgst_amt = [] -%}
+			 {% set igst_amt = [] -%}
+			 {% set it_cgst_rate = [] -%}
+		 	 {% set it_sgst_rate = [] -%}
+			 {% set it_igst_rate = [] -%}
+			 {% set rate_found_item = 0 -%}
+
+								
+		      {%- set item_record = frappe.get_doc("Item", row.item_code) -%}
+			{% for item_tax in item_record.taxes %}
+
+  			  {% if item_tax.tax_type == igst_account_head[0] %}
+				
+				{% set _ = it_igst_rate.append(item_tax.tax_rate) %}
+				{% set _ = igst_amt.append(row.amount * it_igst_rate[0] / 100) -%}
+				{% set rate_found_item = 1 -%}
+			{% endif %}		
+			{% if item_tax.tax_type == sgst_account_head[0] %}
+				
+				{% set _ = it_sgst_rate.append(item_tax.tax_rate) %}
+				{% set _ = sgst_amt.append(row.amount * it_sgst_rate[0] / 100) -%}
+				{% set rate_found_item = 1 -%}
+			{% endif %}	
+			{% if item_tax.tax_type == cgst_account_head[0] %}
+				{% set _ = it_cgst_rate.append(item_tax.tax_rate) %}
+				{% set _ = cgst_amt.append(row.amount * it_cgst_rate[0] / 100) -%}
+				{% set rate_found_item = 1 -%}
+			{% endif %}		
+
+
+		{% endfor %}	
+	  	{% if rate_found_item == 0 %}
+
+			{% if cgst_rate[0] -%}
+			   {% set _ = cgst_amt.append((row.amount * cgst_rate[0])/100) -%}
+			   {% set _= it_cgst_rate.append(cgst_rate[0]) -%}
+			   {% set rate_found_inv = 1 -%}
+		       	{%- endif -%}
+			{% if sgst_rate[0] -%}
+			   {% set _ = sgst_amt.append((row.amount * sgst_rate[0])/100) -%}
+			   {% set _= it_sgst_rate.append(sgst_rate[0]) -%}
+			   
+		       	{%- endif -%}
+			{% if igst_rate[0] -%}
+			   {% set _ = igst_amt.append((row.amount * igst_rate[0])/100) -%}
+			   {% set _= it_igst_rate.append(igst_rate[0]) -%}
+			   {% set rate_found_inv = 1 -%}
+		       	{%- endif -%}
+		{% endif %}
+	
+	
+		{% if not it_cgst_rate[0] %}
+			{% set _ = it_cgst_rate.append(0) %}
+			{% set _ = cgst_amt.append(0) %}
+		{% endif %}
+		{% if not it_sgst_rate[0] %}
+			{% set _ = it_sgst_rate.append(0) %}
+			{% set _ = sgst_amt.append(0) %}
+		{% endif %}
+		{% if not it_igst_rate[0] %}
+			{% set _ = it_igst_rate.append(0) %}
+			{% set _ = igst_amt.append(0) %}
+		{% endif %}
+
+		{% set temp_cgst_amt = grand_total["cgst_amt"] + cgst_amt[0] %}
+		{% set temp_sgst_amt = grand_total["sgst_amt"] + sgst_amt[0] %}
+		{% set temp_igst_amt = grand_total["igst_amt"] + igst_amt[0] %}
+		{% set temp_qty = grand_total["qty"] + row.qty %}
+		{% set temp_amount = grand_total["amount"] + row.amount %}
+		{% set check = grand_total.update({"qty": temp_qty, "amount": temp_amount, "cgst_amt":temp_cgst_amt, "sgst_amt":temp_sgst_amt, "igst_amt":temp_igst_amt}) %}
+		
+			<td style="width: 5%;"><font size = "1">{{ row.idx }}</font></td>
+			<td style="width: 15%;"><font size = "1">
+				{% if row.item_code != row.item_name -%}
+				<b>{{ row.item_code}}</b><br>
+				{%- endif %}
+                                {{ row.item_name }}
+			</font></td>
+			<td style="width: 10%;"><font size = "1">{{ row.gst_hsn_code }}</font></td>
+			<td style="width: 10%; text-align: left;"><font size = "1">{{ row.uom or row.stock_uom }}&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp {{ row.qty }} </font></td>
+			<td style="width: 5%; text-align: right;"><font size = "1">{{
+				row.get_formatted("rate", doc) }}</font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1">{{
+				row.get_formatted("amount", doc) }}</font></td>
+			
+			<td style="width: 4%; text-align: right;"><font size = "1">{{
+				it_cgst_rate[0] }}%</font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1">{{
+				"₹ {:,.2f}".format(cgst_amt[0])  }}</font></td>
+			<td style="width: 4%; text-align: right;"><font size = "1">{{
+				it_sgst_rate[0] }}%</font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1">{{
+				"₹ {:,.2f}".format(sgst_amt[0])  }}</font></td>
+			<td style="width: 4%; text-align: right;"><font size = "1">{{
+				it_igst_rate[0] }}%</font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1">{{
+				"₹ {:,.2f}".format(igst_amt[0])  }}</font></td>
+
+			
+		
+</tr>
+{%- endfor -%}
+<tr>
+
+			<td style="width: 5%;"><font size = "1"></font></td>
+			<td style="width: 15%;"><font size = "1"><b>
+				Total
+			</b></font></td>
+			<td style="width: 10%;"><font size = "1"></font></td>
+			<td style="width: 10%; text-align: left;"><font size = "1"><b> {{ grand_total["qty"] }} </b></font></td>
+			<td style="width: 5%; text-align: right;"><font size = "1"></font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1"><b>{{
+				"₹ {:,.2f}".format(grand_total["amount"]) }}</b></font></td>
+			
+			<td style="width: 4%; text-align: right;"><font size = "1"><font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1"><b>{{
+				"₹ {:,.2f}".format(grand_total["cgst_amt"])  }}</b></font></td>
+			<td style="width: 4%; text-align: right;"><font size = "1"></font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1"><b>{{
+				"₹ {:,.2f}".format(grand_total["sgst_amt"])  }}</b></font></td>
+			<td style="width: 4%; text-align: right;"><font size = "1"></font></td>
+			<td style="width: 10%; text-align: right;"><font size = "1"><b>{{
+				"₹ {:,.2f}".format(grand_total["igst_amt"])  }}</b></font></td>
+		
+</tr>
+</tbody>
+</table>
+
+<table class="noborder">
+	<tbody>
+            	<tr>
+                   <td class="text-right" width = "600"><font size = "1">
+				<b>{{ ("Total") }}</b>
+		    </font></td>
+                    <td class="text-right" width= "200"><font size = "1">
+				{{ doc.get_formatted("net_total") }}
+		    </font></td>
+		</tr>
+             
+              
+           	{%- for row in doc.taxes -%}
+	  	  {%- if not row.included_in_print_rate -%}
+		  <tr>
+			<td class="text-right" width = "600"><font size = "1">
+				<b>{{ row.description }}</b>
+			</font></td>
+			<td class="text-right" width= "200"><font size = "1">
+				{{ row.get_formatted("tax_amount", doc) }}
+			</font></td>
+		 </tr>
+                
+		{%- endif -%}
+		{%- endfor -%}
+		{%- if doc.discount_amount -%}
+		<tr>
+			<td class="text-right" width = "600"><font size = "1">
+				{{ ("Discount") }}
+			</font></td>
+			<td class="text-right" width = "200"><font size = "1">
+				{{ doc.get_formatted("discount_amount") }}
+			</font></td>
+		</tr>
+		{%- endif -%}
+		<tr>
+			<td class="text-right" width = "600"><font size = "1">
+				<b>{{ ("Grand Total") }}</b>
+			</font></td>
+			<td class="text-right" width = "200"><font size = "1">
+				{{ doc.get_formatted("grand_total") }}
+			</font></td>
+		</tr>
+                <tr>
+			<td class="text-right" width = "600"><font size = "1">
+				<b>{{ ("Rounded Total") }}</b>
+			</font></td>
+			<td class="text-right" width = "200"><font size = "1">
+				{{ doc.get_formatted("rounded_total") }}
+			</font></td>
+		</tr>
+                  
+                <tr>
+			<td class="text-right" width = "1000"><font size = "1">
+				<b>{{ ("In Words :") }}</b>
+                        	{{ doc.in_words }} <br>
+                        </font></td>
+                 </tr>
+		   <tr>
+		<td class="text-right" width = "600"><font size = "1">
+		    <b>Whether the tax is payable on Reverse charge? <b></font>
+		</td>
+		<td class="text-right" width = "200"><font size = "1">
+		 {%- if doc.reverse_tax -%}
+		     Yes 
+		{%- else -%}
+		   No	
+                 {%- endif %} 
+		</font> 
+		</td>
+		</tr>
+                                
+
+
+ </tbody>
+</table>          
+
+<hr>
+<p>{{ doc.terms or "" }}</p>
+
+<p> Declaration: We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct. <br> <br></p>
+
+</p>Excise Declaration: We declare to the best of our knowledge and belief that the particulars stated herein are true and correct and that there is no consideration accruing to us directly or indirectly in any manner other than the amounts indicated herein.</p>
+
+<div class="col-md-9 text-right"><font size = "1">for <b>Company Name</b> </font></div><br><br><br>
+       
+<div class="col-md-9 text-right"><font size = "1"><b>Authorized Signatory</b></font></div>
+
+
