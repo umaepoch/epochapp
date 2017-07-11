@@ -484,7 +484,9 @@ def make_stock_requisition(args):
 				"item_code": rows[5],
 				"qty": rows[10],
 				"schedule_date": required_date,
-				"warehouse":planning_warehouse
+				"warehouse":planning_warehouse,
+				"description": rows[3],
+				"uom": rows[6]
 				   }
 				newJson_transfer["items"].append(innerJson_transfer)
 		else:
