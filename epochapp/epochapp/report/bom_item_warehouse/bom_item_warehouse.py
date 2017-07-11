@@ -451,6 +451,7 @@ def make_stock_requisition(args):
 		required = str(rows[9]).strip()
 		msgprint(_(required))
 		msgprint(_(rows[5]))
+		msgprint(_(rows[6]))
 		if required and rows[10] and planning_warehouse != (rows[12]) :
 			msgprint(_("Inside 1"))
 			if whse_map:
