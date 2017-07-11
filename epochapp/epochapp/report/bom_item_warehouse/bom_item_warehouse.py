@@ -475,7 +475,9 @@ def make_stock_requisition(args):
 				"item_code": rows[5],
 				"qty": rows[9],
 				"schedule_date": required_date,
-				"warehouse":planning_warehouse
+				"warehouse":planning_warehouse,
+				"description": rows[3],
+				"uom": rows[6]
 				   }
 
 				if rows[9] >= rows[10]:
