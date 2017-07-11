@@ -449,11 +449,9 @@ def make_stock_requisition(args):
 
 	for rows in summ_data:
 		required = str(rows[9]).strip()
-		msgprint(_(required))
-		msgprint(_(rows[5]))
-		msgprint(_(rows[6]))
+		
 		if required and rows[10] and planning_warehouse != (rows[12]) :
-			msgprint(_("Inside 1"))
+
 			if whse_map:
 
 				if whse_map.get(planning_warehouse):
@@ -470,7 +468,6 @@ def make_stock_requisition(args):
 
 
 			if rows[9]:
-				msgprint(_("Inside 2"))
 				no_transfer = no_transfer + 1
 				if rows[9] < rows[10]:
 					innerJson_transfer =	{
@@ -483,7 +480,6 @@ def make_stock_requisition(args):
 				   }
 
 				if rows[9] >= rows[10]:
-					msgprint(_("Inside 3"))
 					innerJson_transfer =	{
 				"doctype": "Stock Requisition Item",
 				"item_code": rows[5],
@@ -500,7 +496,7 @@ def make_stock_requisition(args):
 	if no_transfer == 0:
 		frappe.msgprint("No Transfer")
 	else:
-		msgprint(_("Inside 4"))
+
 		doc = frappe.new_doc("Stock Requisition")
 		doc.update(newJson_transfer)
 		if args == "as a draft":
@@ -513,9 +509,9 @@ def make_stock_requisition(args):
 
 	for rows in summ_data:
 		delta_qty = str(rows[11]).strip()
-		msgprint(_("Inside 5"))
+
 		if (delta_qty and float(delta_qty) != 0.0):
-			msgprint(_("Inside 6"))
+
 			no_requisition = no_requisition + 1
 			innerJson_requisition =	{
 		"doctype": "Stock Requisition Item",
