@@ -514,8 +514,9 @@ def make_stock_requisition(args):
 
 	for rows in summ_data:
 		delta_qty = str(rows[11]).strip()
-
+		msgprint(_("Inside 5"))
 		if (delta_qty and float(delta_qty) != 0.0):
+			msgprint(_("Inside 6"))
 			no_requisition = no_requisition + 1
 			innerJson_requisition =	{
 		"doctype": "Stock Requisition Item",
