@@ -77,7 +77,7 @@ def execute(filters=None):
 
 
 	for rows in data:
-		item_work = item
+		item_work = rows[1]
 
 		if item_prev == item_work:
 			item_count = item_count + 1
