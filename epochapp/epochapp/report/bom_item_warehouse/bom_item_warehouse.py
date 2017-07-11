@@ -449,7 +449,7 @@ def make_stock_requisition(args):
 
 	for rows in summ_data:
 		required = str(rows[9]).strip()
-
+		msgprint(_(rows[5]))
 		if required and rows[10] and planning_warehouse != (rows[12]) :
 
 			if whse_map:
