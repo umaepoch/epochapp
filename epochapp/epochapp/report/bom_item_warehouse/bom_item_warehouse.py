@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _, msgprint
-from frappe.utils import flt, getdate, datetime
+from frappe.utils import flt, getdate, datetime,comma_and
 from erpnext.stock.stock_balance import get_balance_qty_from_sle
 from datetime import datetime
 import time
@@ -38,7 +38,9 @@ def execute(filters=None):
 	validate_filters(filters)
 	columns = get_columns()
 	item_map = get_item_details(filters)
+	#print "item_map===>>",item_map
 	iwb_map = get_item_warehouse_map(filters)
+	#print "iwb_map==>>",iwb_map
 
 	data = []
 	summ_data = []
@@ -77,7 +79,7 @@ def execute(filters=None):
 
 
 	for rows in data:
-		item_work = rows[1]
+		item_work = rows[11]
 
 		if item_prev == item_work:
 			item_count = item_count + 1
@@ -85,12 +87,11 @@ def execute(filters=None):
 			reqd_qty = (rows[7] / rows[10]) * flt(rows[12])
 			tot_bi_qty = rows[7]
 			tot_reqd_qty = reqd_qty
-
 			if check_for_whole_number_itemwise(item_work):
 				tot_reqd_qty = math.ceil(tot_reqd_qty)
 
 			summ_data.append([rows[0], rows[1], rows[10], rows[2],
-		rows[3], item_work, rows[5], rows[11], " ", " ", rows[6], " ", rows[8]
+		rows[3], rows[4], rows[5], rows[11], " ", " ", rows[6], " ", rows[8]
 			])
 		if (item_prev != item_work or loop_count == len(data)):
 			if item_count > 1:
@@ -104,14 +105,13 @@ def execute(filters=None):
 				total_delta_qty = tot_reqd_qty - tot_bal_qty
 				if total_delta_qty < 0:
 					total_delta_qty = 0
-				summ_data.append([rows[0], " ", " ", " ", " ", item_prev, " ", " ",
+				summ_data.append([rows[0], " ", " ", data_array[3], " ", data_array[5], data_array[6], data_array[7],
 				tot_bi_qty, round(tot_reqd_qty,2),
 				tot_bal_qty, round(total_delta_qty,2), " "
 				])
 			if item_prev != item_work:
 				item_count = 1
 				reqd_qty = (rows[7] / rows[10]) * flt(rows[12])
-
 				if check_for_whole_number_itemwise(item_work):
 					reqd_qty = math.ceil(reqd_qty)
 				tot_bal_qty = rows[6]
@@ -120,12 +120,11 @@ def execute(filters=None):
 					total_delta_qty = 0
 
 				summ_data.append([rows[0], rows[1], rows[10], rows[2],
-				rows[3], item_work,
+				rows[3], rows[4],
 				rows[5], rows[11], rows[7],round(reqd_qty,2) ,tot_bal_qty,round(total_delta_qty,2), rows[8]
 				])
 		item_prev = item_work
 		loop_count = loop_count + 1
-	#print "summ_data===>>",summ_data
 	required_date_count = False
 
 
@@ -202,7 +201,7 @@ def get_item_warehouse_map(filters):
 	if filters.get("warehouse"):
 		temp_whse = filters.get("warehouse")
 
-		if temp_whse == 'All Warehouses - MSPL':
+		if temp_whse == 'All':
 			whse, whs_flag = get_warehouses(company)
 		else:
 			whse, whs_flag = get_whs_branch(temp_whse, filters)
@@ -392,8 +391,8 @@ def check_for_whole_number(bomno):
 	return (frappe.db.sql("""select must_be_whole_number from `tabUOM` where name IN (select uom from `tabBOM`where name = %s) """, (bomno))[0][0])
 
 def check_for_whole_number_itemwise(item):
+	return (frappe.db.sql("""select must_be_whole_number from `tabUOM` where name IN (select stock_uom from `tabItem`where name = %s) """, (item))[0][0])
 
-	return frappe.db.sql("""select must_be_whole_number from `tabUOM` where name IN (select stock_uom from `tabItem`where name = %s) """, (item))[0][0]
 
 
 
@@ -403,7 +402,6 @@ def check_for_whole_number_itemwise(item):
 @frappe.whitelist()
 def make_stock_requisition(args):
 	global required_date_count
-
 	if getdate(required_date) == getdate(datetime.now().strftime('%Y-%m-%d')):
 		if required_date_count == False:
 			required_date_count = True
@@ -411,11 +409,10 @@ def make_stock_requisition(args):
 
 	test_whole_number = check_for_whole_number(bom_for_validation)
 	if test_whole_number and float(qty_to_make) % 1 != 0:
-		frappe.throw("Please change the qty_to_make value")
+		frappe.throw("Quantity to Make should be whole number")
 	innerJson_requisition = " "
 	innerJson_transfer = " "
 	ret = ""
-
 	newJson_transfer = {
 	"company": company,
 	"doctype": "Stock Requisition",
@@ -446,14 +443,15 @@ def make_stock_requisition(args):
 	required = ""
 	delta_qty = ""
 	whse_map = {}
+	empty_desc = []
+	empty_uom = []
+
 
 	for rows in summ_data:
 		required = str(rows[9]).strip()
-		
 		if required and rows[10] and planning_warehouse != (rows[12]) :
 
 			if whse_map:
-
 				if whse_map.get(planning_warehouse):
 					if rows[9] > whse_map.get(planning_warehouse):
 
@@ -468,25 +466,31 @@ def make_stock_requisition(args):
 
 
 			if rows[9]:
+				if rows[3] == "<br>" or rows[3] == "<div><br></div>" or str(rows[3]) == "":
+					empty_desc.append(rows[7])
+				if rows[6] == "":
+					empty_uom.append(rows[7])
 				no_transfer = no_transfer + 1
 				if rows[9] < rows[10]:
 					innerJson_transfer =	{
 				"doctype": "Stock Requisition Item",
-				"item_code": rows[5],
+				"item_code": rows[7],
 				"qty": rows[9],
 				"schedule_date": required_date,
-				"warehouse":planning_warehouse
-				
+				"warehouse":planning_warehouse,
+				"uom": rows[6],
+				"description": rows[3]
 				   }
 
 				if rows[9] >= rows[10]:
 					innerJson_transfer =	{
 				"doctype": "Stock Requisition Item",
-				"item_code": rows[5],
+				"item_code": rows[7],
 				"qty": rows[10],
 				"schedule_date": required_date,
-				"warehouse":planning_warehouse
-				
+				"warehouse":planning_warehouse,
+				"uom":rows[6],
+				"description": rows[3]
 				   }
 				newJson_transfer["items"].append(innerJson_transfer)
 		else:
@@ -494,9 +498,12 @@ def make_stock_requisition(args):
 				whse_map[(rows[12])] = rows[10]
 
 	if no_transfer == 0:
-		frappe.msgprint("No Transfer")
+		frappe.msgprint("Planning Warehouse has all the item !! Stock transfer is not required")
 	else:
-
+		if empty_uom:
+			frappe.throw(_("UOM for  {0} is empty,Please add UOM in Item Master Doctype.").format(frappe.bold(comma_and(empty_uom))))
+		if empty_desc:
+			frappe.throw(_("Description for  {0} is empty,Please add description in Item Master Doctype.").format(frappe.bold(comma_and(empty_desc))))
 		doc = frappe.new_doc("Stock Requisition")
 		doc.update(newJson_transfer)
 		if args == "as a draft":
@@ -511,15 +518,19 @@ def make_stock_requisition(args):
 		delta_qty = str(rows[11]).strip()
 
 		if (delta_qty and float(delta_qty) != 0.0):
-
+			if rows[3] == "<br>" or rows[3] == "<div><br></div>" or str(rows[3]) == "":
+				empty_desc.append(rows[7])
+			if rows[6] == "":
+				empty_uom.append(rows[7])
 			no_requisition = no_requisition + 1
 			innerJson_requisition =	{
 		"doctype": "Stock Requisition Item",
-		"item_code": rows[5],
+		"item_code": rows[7],
 		"qty": float(rows[11]),
 		"schedule_date": required_date,
-		"warehouse":planning_warehouse
-		
+		"warehouse":planning_warehouse,
+		"uom":rows[6],
+		"description": rows[3]
 		   }
 
 			newJson_requisition["items"].append(innerJson_requisition)
@@ -528,8 +539,12 @@ def make_stock_requisition(args):
 	del test_whole_number
 	del delta_qty
 	if no_requisition == 0:
-		frappe.msgprint("All Items are in Stock !! Stock Requisition is not required  ")
+		frappe.msgprint("All Items are in Stock !! Stock Requisition is not required ")
 	else:
+		if empty_uom:
+			frappe.throw(_("UOM for  {0} is empty,Please add UOM in Item Master Doctype.").format(frappe.bold(comma_and(empty_uom))))
+		if empty_desc:
+			frappe.throw(_("Description for  {0} is empty,Please add description in Item Master Doctype.").format(frappe.bold(comma_and(empty_desc))))
 		doc = frappe.new_doc("Stock Requisition")
 		doc.update(newJson_requisition)
 		if args == "as a draft":

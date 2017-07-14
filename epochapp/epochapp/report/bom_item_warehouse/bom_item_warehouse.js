@@ -35,7 +35,7 @@ frappe.query_reports["BOM Item Warehouse"] = {
             "label": __("Warehouse"),
             "fieldtype": "Link",
             "options": "Warehouse",
-            "default": "All Warehouses - MSPL"
+            "default": "All"
         }, {
             "fieldname": "item_code",
             "label": __("Item"),
@@ -72,7 +72,8 @@ frappe.query_reports["BOM Item Warehouse"] = {
           "default": get_today(),
           "on_change": function(query_report) {
             query_report.trigger_refresh();
- //           var required_date = frappe.query_report_filters_by_name.required_on.get_value().split("-").reverse().join("-");;
+	    var filters = query_report.get_values();
+            var required_date = filters.required_on;
             if (required_date < get_today()){
               frappe.msgprint("Required Date cannot be an Earlier Date than today")
               frappe.query_report_filters_by_name.required_on.set_input(get_today());
@@ -97,11 +98,11 @@ frappe.query_reports["BOM Item Warehouse"] = {
                   frappe.throw("Quantity to Make cannot be nagative please input positive value")
                 }
                 if (qty < 1){
-                  frappe.throw(" Quantity to Make should be greater than one")
                   frappe.query_report_filters_by_name.qty_to_make.set_input("1");
+                  frappe.throw(" Quantity to Make should be greater than one")
                 }
                 return frappe.call({
-                    method: "erpnext.manufacturing.report.bom_item_warehouse.bom_item_warehouse.check_for_whole_number",
+                    method: "epochapp.epochapp.report.bom_item_warehouse.bom_item_warehouse.check_for_whole_number",
                     args: {
                         "bomno": frappe.query_report_filters_by_name.bom.get_value()
                     },
@@ -126,12 +127,10 @@ frappe.query_reports["BOM Item Warehouse"] = {
 
     ],
     onload: function(report) {
-
         report.page.add_inner_button(__("As a draft"),
                 function() {
                   var args = "as a draft"
                   var reporter = frappe.query_reports["BOM Item Warehouse"];
-
                     reporter.makeStockRequisition(report,args);},'Make Stock Requisition'),
                     report.page.add_inner_button(__("As final"),
                         function() {
@@ -144,7 +143,6 @@ frappe.query_reports["BOM Item Warehouse"] = {
     return !jQuery.isArray( obj ) && (obj - parseFloat( obj ) + 1) >= 0;
   },
    makeStockRequisition: function(report,status){
-
     var filters = report.get_values();
      if (filters.company && filters.warehouse && filters.bom) {
          return frappe.call({
