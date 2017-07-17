@@ -22,7 +22,7 @@ def calculate_overtime_and_food(employee, start_date, end_date):
 	food_allow = frappe.db.sql("""select count(food_allowance)
 			from `tabAttendance` where employee = %s and attendance_date >= %s and attendance_date <= %s and food_allowance = 'Yes'""", (employee, start_date, end_date))
 
-	
+	msgprint(_(overtime_hours))
 #	food_allow = food_allow[0][0]
 	
 	
