@@ -11,7 +11,6 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
 
-
 @frappe.whitelist()
 def calculate_overtime_and_food(employee, start_date, end_date):
 	
