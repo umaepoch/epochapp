@@ -1,0 +1,91 @@
+<style>
+    .print-format table, .print-format tr,
+    .print-format td, .print-format div, .print-format p {
+        font-family: Monospace;
+        line-height: 100%;
+        vertical-align: middle;
+    }
+    @media screen {
+        .print-format {
+            width: 33.1in;
+            padding: 0.25in;
+            min-height: 46.8<style>
+    .print-format table, .print-format tr,
+    .print-format td, .print-format div, .print-format p {
+        font-family: Monospace;
+        line-height: 200%;
+        vertical-align: middle;
+    }
+    @media screen {
+        .print-format {
+            width: 33.8in;
+            padding: 0.25in;
+            min-height: 46.8in;
+        }
+    }
+</style>
+
+<html>
+<body>
+ 
+<table class="no-border">
+	
+	<tbody>
+
+		<tr>
+
+
+                {% var zpl_head = "^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR2,2~SD15^JUS^LRN^CI0^XZ" %}
+                
+                {% var zpl_head3 = "^XA^MMT^PW812^LL0406^LS0" %}
+
+		<div class="row items" style="margin-top: 40px">
+		{% for(var i=0, l=data.length; i<l; i++) { %}
+			{% var number_labels = data[i][__("Number of labels")] %}
+			
+			{% for(var j=0; j<number_labels; j++) { %}
+			<tr>
+				<td style="width:85px">   
+					
+					{%var zpl_head = zpl_head + zpl_head3 %}
+                                        {% var serial_number = data[i][__("Serial Number")] %}
+                                        {% var item_code = data[i][__("Item Code")] %}
+                                       
+                                       {% var zpl_head = zpl_head+ "^FT250,79^A0R,28,28^FH\^FD" + serial_number + "^FS^FT533,53^A0R,28,28^FH\^FD" + item_code + "^FS^FT300,301^BQN,2,8^FH\^FDMA1" + serial_number +"^FS^PQ1,0,1,Y^XZ" %}
+                    			{{ zpl_head }}                                        
+				</td>
+			</tr>
+		     {% } %}				
+		{% } %}
+</tbody>
+</table>
+
+saveTextAsFile()		
+
+<script type="text/javascript">
+
+function saveTextAsFile()
+{
+    var inputTextToSave = zpl_head
+    var textToSave = document.getElementById(zpl_head).value;
+    var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+    var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+    var fileNameToSaveAs = document.getElementById("qrcode.txt").value;
+ 
+    var downloadLink = document.createElement("a");
+    downloadLink.download = fileNameToSaveAs;
+    downloadLink.innerHTML = "Download File";
+    downloadLink.href = textToSaveAsURL;
+    downloadLink.onclick = destroyClickedElement;
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+ 
+    downloadLink.click();
+}
+  
+</script>
+ 
+</body>
+</html>
+
+
