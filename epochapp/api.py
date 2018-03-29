@@ -91,7 +91,7 @@ def generate_rarb(warehouse, rooms, aisle, rack, bin_no):
 			}
 	
 	for w in xrange(1, room):
-		room_id = "Room-" + str(w)
+		room_id = warehouse + "-Room-" + str(w)
 		newJson = {
 			"system_id": room_id,
 			"doctype": "RARB Detail",
@@ -121,7 +121,7 @@ def generate_rarb(warehouse, rooms, aisle, rack, bin_no):
 
 	
 		for x in xrange(1, ais):
-			aisle_id = "Aisle-" + str(w) + "-" + str(x)
+			aisle_id = warehouse + "-Aisle-" + str(w) + "-" + str(x)
 
 			newJson = {
 				"system_id": aisle_id,
@@ -152,7 +152,7 @@ def generate_rarb(warehouse, rooms, aisle, rack, bin_no):
 
 
 			for y in xrange(1, rac):
-				rac_id = "Rack-" + str(w) + "-" + str(x)+ "-" + str(y)
+				rac_id = warehouse + "-Rack-" + str(w) + "-" + str(x)+ "-" + str(y)
 				newJson = {
 					"system_id": rac_id,
 					"doctype": "RARB Detail",
@@ -182,7 +182,7 @@ def generate_rarb(warehouse, rooms, aisle, rack, bin_no):
 
 
 				for z in xrange(1, bin_n):
-					bin_id = "Bin-" + str(w) + "-" + str(x)+ "-" + str(y)+ "-" + str(z)
+					bin_id = warehouse + "-Bin-" + str(w) + "-" + str(x)+ "-" + str(y)+ "-" + str(z)
 					newJson = {
 						"system_id": bin_id,
 						"doctype": "RARB Detail",
