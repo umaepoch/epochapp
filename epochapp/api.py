@@ -29,7 +29,7 @@ def get_user_role_status(approval_a, dt):
 			role_status = "Rejected"
 			return role_status
 		else:
-			workflow_records = frappe.db.sql("""select at.approval_level, at.approval_role, at_approval_status from `tabApproval Master` am, `Approval Transition` at where at.parent = am.name and am.doctype = %s""", (dt), as_dict = 1)
+			workflow_records = frappe.db.sql("""select at.approval_level, at.approval_role, at.approval_status from `tabApproval Master` am, `tabApproval Transition` at where at.parent = am.name and am.document_type = %s""", (dt), as_dict = 1)
 			frappe.msgprint(_(workflow_records))
 			if workflow_records:
 				for wfw in workflow_records:
