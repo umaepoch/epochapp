@@ -21,9 +21,11 @@ def get_user_role():
 
 @frappe.whitelist()
 def get_user_role_status(approval_a, dt):
+	frappe.msgprint(_("Inside api"))
 	frappe.msgprint(_(approval_a))
 	role_status = ""
 	userrole = frappe.db.get_value("User",{"name":frappe.session.user},"role_profile_name")
+	frappe.msgprint(_(userrole))
 	if userrole:
 		if approval_a == "Rejected":
 			role_status = "Rejected"
@@ -47,6 +49,8 @@ def get_user_role_status(approval_a, dt):
 			else:
 				frappe.msgprint(_("There are no Approval workflow records set for doctype: " + dt))	
 				return 0
+	else:
+		return 0
 	
 
 
