@@ -712,5 +712,16 @@ def get_serial_number(item, second_uom, second_uom_qty):
         return next_serial_number
 
 
-
+@frappe.whitelist()
+def get_whse_list_stock(item_code):
+	frappe.msgprint(_("Item Code"))
+	frappe.msgprint(_(item_code))
+	frappe.msgprint(_("Inside api"))
+	records = frappe.db.sql("""select warehouse, sum(ledger.actual_qty) as stock_qty
+		from `tabBin` ledger where ledger.item_code = %s GROUP BY ledger.warehouse HAVING stock_qty > 0 ORDER BY stock_qty desc""", item_code, as_dict=1)
+	if records:
+		frappe.msgprint(_(records[0].warehouse))
+		return records[0].warehouse
+	else:
+		return
 
