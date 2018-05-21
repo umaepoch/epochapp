@@ -722,6 +722,7 @@ def get_whse_list_stock(item_code):
 	if records:
 #		frappe.msgprint(_(records[0].warehouse))
 #		return records[0].warehouse
+		frappe.msgprint(_(records))
 		return records
 	else:
 		return
