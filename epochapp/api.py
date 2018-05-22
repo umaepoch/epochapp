@@ -718,8 +718,8 @@ def get_whse_list_stock(item_code):
 		from `tabBin` ledger where ledger.item_code = %s GROUP BY ledger.warehouse HAVING stock_qty > 0 ORDER BY stock_qty desc""", item_code, as_dict=1)
 	if records:
 #		frappe.msgprint(_(records[0].warehouse))
-#		return records[0].warehouse
-		return records
+		return records[0].warehouse
+#		return records
 	else:
 		return
 
