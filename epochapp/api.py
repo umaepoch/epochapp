@@ -10,6 +10,10 @@ from erpnext.utilities.transaction_base import TransactionBase
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
+from frappe.jobs.background_jobs import enqueue
+
+#def enqueue_long_job(arg1, args2):
+#    enqueue('epochapp.api.generate_rarb', arg1=arg1, arg2=arg2)
 
 @frappe.whitelist()
 def get_user_role():
@@ -97,6 +101,7 @@ def delete_rarb(warehouse):
 	
 @frappe.whitelist()
 def validate_rarb(warehouse):
+	frappe.msgprint(_("Inside Validate RARB"))
 	exists = ""
 	rarb_rec = frappe.db.sql("""Select name from `tabRARB` where name = %s""", warehouse, as_dict=1)
 	if rarb_rec:
