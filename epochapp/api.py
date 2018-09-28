@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import add_days, cint, cstr, flt, getdate, rounded, date_diff, money_in_words
 from frappe.model.naming import make_autoname
-
 from frappe import msgprint, _, throw, utils
 #from erpnext.hr.doctype.process_payroll.process_payroll import get_start_end_dates
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
@@ -10,13 +9,14 @@ from erpnext.utilities.transaction_base import TransactionBase
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.party import get_party_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
-from frappe.jobs.background_jobs import enqueue
+#from frappe.jobs.background_jobs import enqueue
 
 #def enqueue_long_job(arg1, args2):
 #    enqueue('epochapp.api.generate_rarb', arg1=arg1, arg2=arg2)
 
 @frappe.whitelist()
 def get_user_role():
+	print "Inside get user role"
 	userrole = frappe.db.get_value("User",{"name":frappe.session.user},"role_profile_name")
 	if userrole:
 		return userrole	
@@ -36,7 +36,7 @@ def get_user_role_status(approval_a, dt):
 			return role_status
 		else:
 			workflow_records = frappe.db.sql("""select at.approval_level, at.approval_role, at.approval_status from `tabApproval Master` am, `tabApproval Transition` at where at.parent = am.name and am.document_type = %s""", (dt), as_dict = 1)
-			frappe.msgprint(_(workflow_records))
+
 			if workflow_records:
 				for wfw in workflow_records:
 					if userrole == wfw.approval_role:
@@ -100,7 +100,7 @@ def delete_rarb(warehouse):
 		
 	
 @frappe.whitelist()
-def validate_rarb(warehouse):
+def validate_rarb():
 	frappe.msgprint(_("Inside Validate RARB"))
 	exists = ""
 	rarb_rec = frappe.db.sql("""Select name from `tabRARB` where name = %s""", warehouse, as_dict=1)
